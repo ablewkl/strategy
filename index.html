@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>V4 ETF 策略面板</title>
+  <title>ETF 策略面板</title>
   <style>
     :root {
       color-scheme: light;
@@ -154,11 +154,9 @@
       border: 1px solid rgba(161, 98, 7, 0.15);
     }
 
-    .toolbar button:disabled,
-    .tile-btn:disabled {
-      cursor: default;
-      opacity: 1;
-      transform: none;
+    .toolbar button[hidden],
+    .all-operation-field[hidden] {
+      display: none;
     }
 
     .status {
@@ -172,10 +170,52 @@
       color: var(--danger);
     }
 
+    .summary-grid,
     .action-grid {
       display: grid;
       gap: 14px;
+    }
+
+    .summary-grid {
       grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .summary-card,
+    .action-tile {
+      background: var(--surface-strong);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 14px 36px rgba(114, 82, 57, 0.08);
+    }
+
+    .summary-card {
+      display: grid;
+      gap: 10px;
+      min-height: 144px;
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .summary-value {
+      font-size: 24px;
+      line-height: 1.18;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .summary-copy {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.72;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .panel {
@@ -205,15 +245,15 @@
       line-height: 1.7;
     }
 
+    .action-grid {
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
     .action-tile {
       display: grid;
       gap: 12px;
       padding: 0;
       overflow: hidden;
-      background: var(--surface-strong);
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      box-shadow: 0 14px 36px rgba(114, 82, 57, 0.08);
     }
 
     .tile-btn {
@@ -292,6 +332,13 @@
 
     .meta-pill {
       color: var(--muted);
+    }
+
+    .cache-pill {
+      color: var(--danger);
+      background: var(--danger-soft);
+      border-color: rgba(194, 65, 12, 0.18);
+      font-weight: 700;
     }
 
     .chip {
@@ -510,41 +557,6 @@
       box-shadow: 0 12px 28px rgba(182, 94, 56, 0.22);
     }
 
-    .dialog-btn.secondary {
-      background: var(--surface-soft);
-      color: var(--text);
-      border: 1px solid var(--line-strong);
-      box-shadow: none;
-    }
-
-    #refreshConfirmDialog {
-      width: min(520px, calc(100vw - 24px));
-      max-width: 520px;
-    }
-
-    #refreshConfirmDialog .dialog-shell {
-      max-height: none;
-    }
-
-    .confirm-copy {
-      margin: 0;
-      color: var(--text);
-      font-size: 15px;
-      line-height: 1.8;
-    }
-
-    .confirm-data-time {
-      color: var(--danger);
-      font-weight: 800;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .confirm-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-
     .card-list {
       display: grid;
       gap: 12px;
@@ -692,6 +704,60 @@
       line-height: 1.35;
     }
 
+    #todayTrendDialog table {
+      min-width: 680px;
+    }
+
+    .trend-up {
+      color: var(--danger);
+      font-weight: 800;
+    }
+
+    .trend-down {
+      color: var(--ok);
+      font-weight: 800;
+    }
+
+    .trend-flat {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    #refreshConfirmDialog {
+      width: min(520px, calc(100vw - 24px));
+      max-width: 520px;
+    }
+
+    #refreshConfirmDialog .dialog-shell {
+      max-height: none;
+    }
+
+    .confirm-copy {
+      margin: 0;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .confirm-data-time {
+      color: var(--danger);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .dialog-btn.secondary {
+      background: var(--surface-soft);
+      color: var(--text);
+      border: 1px solid var(--line-strong);
+      box-shadow: none;
+    }
+
     .name-sub {
       color: var(--muted);
       font-size: 12px;
@@ -713,6 +779,36 @@
       font-size: 16px;
       font-weight: 800;
       line-height: 1.65;
+    }
+
+    .all-operation-amounts {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .all-operation-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .all-operation-field label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .all-operation-total {
+      color: var(--accent-strong);
+      font-variant-numeric: tabular-nums;
+      white-space: normal;
+    }
+
+    .all-operation-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     #tradeDialog .dialog-shell {
@@ -935,40 +1031,14 @@
       to { transform: rotate(360deg); }
     }
 
-    .all-operation-amounts {
-      display: grid;
-      gap: 10px;
-      grid-template-columns: repeat(1, minmax(0, 1fr));
-    }
-
-    .all-operation-field {
-      display: grid;
-      gap: 6px;
-    }
-
-    .all-operation-field label {
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-      line-height: 1.5;
-    }
-
-    .all-operation-total {
-      color: var(--accent-strong);
-      font-variant-numeric: tabular-nums;
-      white-space: normal;
-    }
-
-    .all-operation-summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
     @media (min-width: 760px) {
       .hero {
         grid-template-columns: minmax(0, 1.3fr) minmax(360px, .9fr);
         align-items: end;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .action-grid {
@@ -984,7 +1054,7 @@
       }
 
       .all-operation-amounts {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
       .profit-grid {
@@ -993,6 +1063,12 @@
 
       .month-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1040px) {
+      .summary-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
     }
   </style>
@@ -1006,10 +1082,13 @@
         <p id="heroSummary">最新交易日: -&nbsp;&nbsp;结果来源: - | <span class="cache-highlight">最后缓存时间: -</span></p>
       </div>
       <div class="hero-copy">
-        <div class="toolbar">
-          <button id="btnV4" class="active" type="button">V4</button>
-          <button id="btnV10" type="button">V10</button>
-          <button id="openAllOperationsBtn" type="button">全部操作</button>
+       <div class="toolbar">
+         <button id="btnV4" class="active" type="button">V4</button>
+         <button id="btnV8" type="button">V8</button>
+         <button id="btnV10Pro" type="button">V10Pro</button>
+         <button id="btnV10" type="button">V10</button>
+         <button id="btnTodayTrend" type="button">今日走势</button>
+         <button id="openAllOperationsBtn" type="button">全部操作</button>
           <button id="btnRefresh" class="warn" type="button">获取最新数据</button>
         </div>
         <div class="status" id="status">请输入口令后读取前端缓存</div>
@@ -1053,7 +1132,7 @@
             <div class="tile-top">
               <div>
                 <div class="tile-title">最新排名</div>
-                <div class="tile-copy">查看最新交易日 score 排行、买入条件、过滤条件和最终通过结果。</div>
+                <div class="tile-copy">查看最新交易日 score 排行、完整买入条件、过滤条件和最终通过结果。</div>
               </div>
               <div class="tile-arrow" aria-hidden="true">
                 <svg viewBox="0 0 24 24">
@@ -1074,7 +1153,7 @@
             <div class="tile-top">
               <div>
                 <div class="tile-title">最近交易</div>
-                <div class="tile-copy">查看最近命中到结算的交易明细，重点展示命中日期、买入价格、卖出状态、收益和账户收益。</div>
+                <div class="tile-copy">查看最近命中到结算的交易详情，重点展示买卖条件、日期、价格、收益和账户收益。</div>
               </div>
               <div class="tile-arrow" aria-hidden="true">
                 <svg viewBox="0 0 24 24">
@@ -1096,7 +1175,7 @@
             <div class="tile-top">
               <div>
                 <div class="tile-title">最近收益</div>
-                <div class="tile-copy">查看近交易日统计、最新一次卖出账户收益和年度月度收益分布。</div>
+                <div class="tile-copy">查看近交易日统计、最新一卖出账户收益和年度收益分布。</div>
               </div>
               <div class="tile-arrow" aria-hidden="true">
                 <svg viewBox="0 0 24 24">
@@ -1162,7 +1241,7 @@
       <div class="dialog-head">
         <div>
           <h3>全部操作</h3>
-          <p>V4、V10 的买入与卖出计划按输入金额合并。</p>
+          <p id="allOperationsScopeNote">V4、V10 的买入计划按输入金额合并；同一 ETF 保留各策略订单价格和份额。</p>
         </div>
         <button class="dialog-close" data-close-dialog="allOperationsDialog" type="button">×</button>
       </div>
@@ -1170,14 +1249,22 @@
         <section class="dialog-section wide">
           <h4>策略金额</h4>
           <div id="allStrategyCompoundMultipliers" class="all-operation-summary" aria-label="各策略复利倍数"></div>
-          <p class="section-note">V4 为 4 槽；V10 为独立 2 槽、每槽 1/2。输入金额直接用于每条对应策略计划的份额计算，不再按仓位比例换算。</p>
+          <p class="section-note" id="allOperationsSlotNote">V4 为 1/4 仓位；V10 为独立2槽、每槽1/2。输入金额直接用于每条对应策略计划的份额计算，不再按仓位比例换算。</p>
           <div class="all-operation-amounts">
-            <div class="all-operation-field">
-              <label for="allV4Amount">V4 金额 <span id="allV4Total" class="all-operation-total">(总金额:80000)</span></label>
+            <div class="all-operation-field" id="allV4Field">
+              <label for="allV4Amount">V4 金额 <span id="allV4Total" class="all-operation-total">(总金额:0)</span></label>
               <input id="allV4Amount" class="capital" type="text" inputmode="decimal" placeholder="例如 20000" />
             </div>
-            <div class="all-operation-field">
-              <label for="allV10Amount">V10 金额 <span id="allV10Total" class="all-operation-total">(总金额:40000)</span></label>
+            <div class="all-operation-field" id="allV8Field">
+              <label for="allV8Amount">V8 金额 <span id="allV8Total" class="all-operation-total">(总金额:0)</span></label>
+              <input id="allV8Amount" class="capital" type="text" inputmode="decimal" placeholder="例如 40000" />
+            </div>
+            <div class="all-operation-field" id="allV10ProField">
+              <label for="allV10ProAmount">V10Pro 金额 <span id="allV10ProTotal" class="all-operation-total">(总金额:0)</span></label>
+              <input id="allV10ProAmount" class="capital" type="text" inputmode="decimal" placeholder="例如 30000" />
+            </div>
+            <div class="all-operation-field" id="allV10Field">
+              <label for="allV10Amount">V10 金额 <span id="allV10Total" class="all-operation-total">(总金额:0)</span></label>
               <input id="allV10Amount" class="capital" type="text" inputmode="decimal" placeholder="例如 20000" />
             </div>
           </div>
@@ -1202,20 +1289,52 @@
     </div>
   </dialog>
 
+  <dialog id="todayTrendDialog">
+    <div class="dialog-shell">
+      <div class="dialog-head">
+        <div>
+          <h3>今日走势</h3>
+          <p id="todayTrendDialogNote">按 (close - open) / open 从大到小排列。</p>
+        </div>
+        <button class="dialog-close" data-close-dialog="todayTrendDialog" type="button">×</button>
+      </div>
+      <div class="dialog-body">
+        <section class="dialog-section wide">
+          <p class="section-note">今日走势 = (收盘价 - 开盘价) / 开盘价</p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>排名</th>
+                  <th>ETF</th>
+                  <th>开盘价</th>
+                  <th>收盘价</th>
+                  <th>今日走势</th>
+                </tr>
+              </thead>
+              <tbody id="todayTrendTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </div>
+  </dialog>
+
   <dialog id="rankingDialog">
     <div class="dialog-shell">
       <div class="dialog-head">
         <div>
-          <h3>最新交易日排名</h3>
-          <p id="rankingDialogNote">V4 排名会展示 score、short、long、last1、time60 和买入观察，用同一套前端入口查看。</p>
+          <h3>最新交易日排行</h3>
+          <p id="rankingDialogNote">score 排行显示 10chg、50chg、完整买入条件、过滤条件和通过状态。</p>
         </div>
         <button class="dialog-close" data-close-dialog="rankingDialog" type="button">×</button>
       </div>
       <div class="dialog-body">
         <section class="dialog-section wide">
           <h4>最新排名</h4>
-          <p class="section-note" id="rankingFormula">score公式: -</p>
-          <p class="section-note" id="rankingHint">-</p>
+          <p class="section-note" id="rankingFormula">Score公式: -</p>
+          <p class="section-note" id="rankingHint">无</p>
+          <div id="rankingBuyRules" class="chip-row"></div>
           <div class="table-wrap">
             <table>
               <thead>
@@ -1244,22 +1363,22 @@
       <div class="dialog-head">
         <div>
           <h3>最近交易详情</h3>
-          <p id="tradeDialogNote">展示最近命中到结算的详情，未结算记录的卖出日期、卖出价格、收益、账户收益都会显示为 -。</p>
+          <p id="tradeDialogNote">展示最近命中到结算的详情，不显示分数和排名，重点看条件、价格、收益和账户收益。</p>
         </div>
         <button class="dialog-close" data-close-dialog="tradeDialog" type="button">×</button>
       </div>
       <div class="dialog-body">
         <section class="dialog-section wide">
           <h4>最近交易</h4>
-          <p class="section-note" id="tradeHint">-</p>
+          <p class="section-note" id="tradeHint">无</p>
           <div id="tradeReturnChart" class="return-chart"></div>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
                   <th>ETF</th>
-                  <th>买入信号</th>
-                  <th>卖出状态</th>
+                  <th>买入条件</th>
+                  <th>卖出条件</th>
                   <th>买入日期</th>
                   <th>买入价格</th>
                   <th>卖出日期</th>
@@ -1282,7 +1401,7 @@
       <div class="dialog-head">
         <div>
           <h3>最近收益</h3>
-          <p id="profitDialogNote">近交易日统计、最新一次卖出账户收益、年度月度收益。</p>
+          <p id="profitDialogNote">近交易日统计、最新一卖出账户收益、年度收益。</p>
         </div>
         <button class="dialog-close" data-close-dialog="profitDialog" type="button">×</button>
       </div>
@@ -1290,7 +1409,7 @@
         <div class="profit-grid" id="profitCards"></div>
         <section class="dialog-section wide">
           <h4>年度收益</h4>
-          <p class="section-note" id="yearlyTitle">-</p>
+          <p class="section-note" id="yearlyTitle">无</p>
           <div class="month-grid" id="yearlyGrid"></div>
         </section>
       </div>
@@ -1303,7 +1422,7 @@
       <div class="dialog-head">
         <div>
           <h3>获取最新数据</h3>
-          <p>确认后将请求后端重新获取 V4、V10 全部数据。</p>
+          <p id="refreshConfirmScopeNote">确认后将请求后端重新获取 V4、V10 全部数据。</p>
         </div>
       </div>
       <div class="dialog-body">
@@ -1325,16 +1444,16 @@
     <div class="loading-card" role="status" aria-live="polite">
       <div class="loading-spinner"></div>
       <div class="loading-title" id="loadingTitle">请求中</div>
-      <div class="loading-subtitle" id="loadingSubtitle">正在获取最新 V4 / V10 结果</div>
+      <div class="loading-subtitle" id="loadingSubtitle">正在获取最新策略结果</div>
     </div>
   </div>
 
   <div class="auth-overlay" id="authOverlay" aria-hidden="false">
     <div class="auth-card">
       <div class="auth-title">输入访问口令</div>
-      <div class="auth-copy">此页面使用 V4 口令读取 V4、V10 数据。输入口令后才能读取前端缓存或获取最新数据，口令只保存在当前页面内存里，不写入本地存储。</div>
+      <div class="auth-copy">输入口令后才能读取缓存或刷新数据。口令只保存在当前页面内存里，不做本地保存。</div>
       <div class="auth-form">
-        <input id="passwordModalInput" class="password-modal-input" type="password" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="输入访问口令" />
+        <input id="passwordModalInput" class="password-modal-input" type="password" inputmode="numeric" placeholder="输入访问口令" />
         <button id="passwordSubmitBtn" class="modal-btn" type="button">进入页面</button>
       </div>
       <div class="auth-error" id="authError"></div>
@@ -1343,14 +1462,16 @@
 
   <script src="./echarts.min.js"></script>
   <script>
-    const pageParams = new URLSearchParams(window.location.search);
-    const MAIN_BACKEND_BASE_URL = "https://1258557411-28azoctxlh.ap-guangzhou.tencentscf.com";
-    const DEFAULT_BASE_URL = pageParams.get("apiBase") || MAIN_BACKEND_BASE_URL;
+    const DEFAULT_BASE_URL = "https://1258557411-28azoctxlh.ap-guangzhou.tencentscf.com";
     const baseUrl = DEFAULT_BASE_URL.replace(/\/+$/, "");
+    const pageParams = new URLSearchParams(window.location.search);
 
     const statusEl = document.getElementById("status");
-    const btnV4 = document.getElementById("btnV4");
+    const btnV10Pro = document.getElementById("btnV10Pro");
     const btnV10 = document.getElementById("btnV10");
+    const btnV8 = document.getElementById("btnV8");
+    const btnV4 = document.getElementById("btnV4");
+    const btnTodayTrend = document.getElementById("btnTodayTrend");
     const openAllOperationsBtn = document.getElementById("openAllOperationsBtn");
     const btnRefresh = document.getElementById("btnRefresh");
     const heroSummaryEl = document.getElementById("heroSummary");
@@ -1367,6 +1488,7 @@
 
     const operationDialog = document.getElementById("operationDialog");
     const allOperationsDialog = document.getElementById("allOperationsDialog");
+    const todayTrendDialog = document.getElementById("todayTrendDialog");
     const rankingDialog = document.getElementById("rankingDialog");
     const tradeDialog = document.getElementById("tradeDialog");
     const profitDialog = document.getElementById("profitDialog");
@@ -1382,18 +1504,36 @@
     const sellPlanListEl = document.getElementById("sellPlanList");
 
     const allV4AmountInput = document.getElementById("allV4Amount");
+    const allV10ProAmountInput = document.getElementById("allV10ProAmount");
     const allV10AmountInput = document.getElementById("allV10Amount");
+    const allV8AmountInput = document.getElementById("allV8Amount");
     const allV4TotalEl = document.getElementById("allV4Total");
+    const allV8TotalEl = document.getElementById("allV8Total");
+    const allV10ProTotalEl = document.getElementById("allV10ProTotal");
     const allV10TotalEl = document.getElementById("allV10Total");
     const allOperationsConfirmBtn = document.getElementById("allOperationsConfirmBtn");
-    const allStrategyCompoundMultipliersEl = document.getElementById("allStrategyCompoundMultipliers");
     const allOperationsSummaryEl = document.getElementById("allOperationsSummary");
+    const allStrategyCompoundMultipliersEl = document.getElementById("allStrategyCompoundMultipliers");
     const allBuyPlanListEl = document.getElementById("allBuyPlanList");
     const allSellPlanListEl = document.getElementById("allSellPlanList");
+
+    const todayTrendDialogNoteEl = document.getElementById("todayTrendDialogNote");
+    const todayTrendTableBodyEl = document.getElementById("todayTrendTableBody");
+    const refreshConfirmDataTimeEl = document.getElementById("refreshConfirmDataTime");
+    const refreshConfirmCancelBtn = document.getElementById("refreshConfirmCancelBtn");
+    const refreshConfirmSubmitBtn = document.getElementById("refreshConfirmSubmitBtn");
+    const refreshConfirmScopeNoteEl = document.getElementById("refreshConfirmScopeNote");
+    const allOperationsScopeNoteEl = document.getElementById("allOperationsScopeNote");
+    const allOperationsSlotNoteEl = document.getElementById("allOperationsSlotNote");
+    const allV4Field = document.getElementById("allV4Field");
+    const allV8Field = document.getElementById("allV8Field");
+    const allV10ProField = document.getElementById("allV10ProField");
+    const allV10Field = document.getElementById("allV10Field");
 
     const rankingDialogNoteEl = document.getElementById("rankingDialogNote");
     const rankingFormulaEl = document.getElementById("rankingFormula");
     const rankingHintEl = document.getElementById("rankingHint");
+    const rankingBuyRulesEl = document.getElementById("rankingBuyRules");
     const rankingTableBodyEl = document.getElementById("rankingTableBody");
 
     const tradeDialogNoteEl = document.getElementById("tradeDialogNote");
@@ -1414,40 +1554,70 @@
     const passwordSubmitBtn = document.getElementById("passwordSubmitBtn");
     const authErrorEl = document.getElementById("authError");
     const pageTooltipEl = document.getElementById("conditionTooltip");
-    const refreshConfirmDataTimeEl = document.getElementById("refreshConfirmDataTime");
-    const refreshConfirmCancelBtn = document.getElementById("refreshConfirmCancelBtn");
-    const refreshConfirmSubmitBtn = document.getElementById("refreshConfirmSubmitBtn");
 
-    const AMOUNT_STORAGE_KEY = "etf_strategy_v4_amount_v2";
-    const STRATEGY_BUNDLE_STORAGE_KEY = "etf_strategy_v4_v10_v4pro_20260816";
-    const ALL_OPERATION_AMOUNTS_STORAGE_KEY = "etf_strategy_v4_all_operation_amounts_v1";
-    const ALL_OPERATION_DEFAULT_AMOUNTS = { v4: "20000", v10: "20000" };
+    const AMOUNT_STORAGE_KEY = "etf_strategy_amount_v1";
+    const ALL_OPERATION_AMOUNTS_STORAGE_KEY = "etf_strategy_all_operation_amounts_v1";
+    const ALL_OPERATION_DEFAULT_AMOUNTS = {
+      v4: "20000",
+      v8: "40000",
+      v10pro: "30000",
+      v10: "20000"
+    };
+    const STRATEGY_BUNDLE_STORAGE_KEY = "etf_strategy_bundle_v10_v8_v4pro_20260816";
+    const ALL_STRATEGIES = ["v4", "v8", "v10pro", "v10"];
+    const DEFAULT_STRATEGIES = ["v4", "v10"];
+    const ORDER_PRICE_MULTIPLIER = 1.04;
+    const DEMO_BUNDLE_URL = pageParams.get("demoBundle") || (pageParams.get("demo") === "1" ? "./demo/etf_strategy_bundle_latest.json" : "");
+    const DEMO_MODE = Boolean(DEMO_BUNDLE_URL);
+    const DEMO_AMOUNT = pageParams.get("amount") || "20000";
 
     const HEADING_MAP = {
-      "最近命中明细:": "hits",
-      "最近卖出明细:": "sells",
-      "最新交易日score排行:": "ranking",
-      "最新V4买入计划:": "buyPlan",
-      "最新V10挂单计划:": "buyPlan",
-      "当前待结算持仓:": "holds",
-      "卖出计划:": "pendingSells",
-      "买入条件:": "buyRules",
-      "过滤条件:": "filterRules",
-      "卖出条件:": "sellRules",
-      "新增信号详情:": "signalDetails",
-      "最新交易日已触发、待下一交易日开盘卖出的持仓:": "pendingSells"
+      "卖出计划:": "卖出计划",
+      "当前待结算持仓:": "当前待结算持仓",
+      "当前待结算持仓": "当前待结算持仓",
+      "最新V10Pro挂单计划:": "买入计划",
+      "最新V10挂单计划:": "买入计划",
+      "最新V8买入计划:": "买入计划",
+      "最新V4买入计划:": "买入计划",
+      "最新交易日score排行:": "最新交易日score排行",
+      "新增信号详情:": "新增信号详情",
+      "新增信号详细:": "新增信号详情",
+      "买入条件:": "买入条件",
+      "过滤条件:": "过滤条件",
+      "卖出条件:": "卖出条件",
+      "最近命中明细:": "最近命中明细",
+      "最近交易/挂单明细:": "最近命中明细",
+      "最近命中/挂单明细:": "最近命中明细",
+      "命中/挂单未成交:": "最近命中明细",
+      "最近卖出明细:": "最近卖出明细",
+      "卖出:": "最近卖出明细",
+      "最新交易日已触发、待下一交易日开盘卖出的持仓:": "卖出计划"
     };
 
+    const SECTION_NAMES = [
+      "最近命中明细",
+      "最近卖出明细",
+      "最新交易日score排行",
+      "买入条件",
+      "过滤条件",
+      "卖出条件",
+      "新增信号详情",
+      "买入计划",
+      "当前待结算持仓",
+      "卖出计划"
+    ];
+
     let currentStrategy = "v4";
+    let currentStrategies = DEFAULT_STRATEGIES.slice();
     let currentPassword = "";
     let currentPayload = null;
     let currentParsed = null;
-    let strategyPayloadMap = { v4: null, v10: null };
+    let strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null };
     let currentSplitMap = {};
     let currentSplitRequestId = 0;
+    let allOperationSplitRequestId = 0;
     let allOperationSignalCloseMap = {};
     let allOperationSignalCloseRequestId = 0;
-    let allOperationSplitRequestId = 0;
     let currentReturnChartPoints = [];
     let echartsLoadPromise = null;
     let activeTooltipTrigger = null;
@@ -1459,7 +1629,7 @@
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
+        .replace(/\"/g, "&quot;")
         .replace(/'/g, "&#39;");
     }
 
@@ -1467,36 +1637,12 @@
       return String(text || "").split(/\r?\n/).map(line => line.trimEnd());
     }
 
-    function safeStorageGet(key) {
-      try {
-        return localStorage.getItem(key);
-      } catch {
-        return null;
-      }
-    }
-
-    function safeStorageSet(key, value) {
-      try {
-        localStorage.setItem(key, value);
-      } catch {
-        // Ignore storage failures.
-      }
-    }
-
-    function safeStorageRemove(key) {
-      try {
-        localStorage.removeItem(key);
-      } catch {
-        // Ignore storage failures.
-      }
-    }
-
     function setStatus(message, isError = false) {
       statusEl.textContent = message;
       statusEl.classList.toggle("error", isError);
     }
 
-    function setLoading(active, title = "请求中", subtitle = "正在获取最新 V4 / V10 结果") {
+    function setLoading(active, title = "请求中", subtitle = "正在获取最新策略结果") {
       document.body.classList.toggle("loading", active);
       loadingOverlay.setAttribute("aria-hidden", active ? "false" : "true");
       loadingTitle.textContent = title;
@@ -1513,12 +1659,86 @@
     }
 
     function setActiveButton() {
-      btnV4.classList.toggle("active", currentStrategy === "v4");
+      btnV10Pro.classList.toggle("active", currentStrategy === "v10pro");
       btnV10.classList.toggle("active", currentStrategy === "v10");
+      btnV8.classList.toggle("active", currentStrategy === "v8");
+      btnV4.classList.toggle("active", currentStrategy === "v4");
+    }
+
+    function strategyLabel(strategy) {
+      return strategy === "v10pro" ? "V10Pro" : String(strategy || "").toUpperCase();
+    }
+
+    function scopedStrategyLabels(separator = "、") {
+      return currentStrategies.map(strategyLabel).join(separator);
+    }
+
+    function updateAllOperationsSlotNote() {
+      const parts = [];
+      const quarterSlotStrategies = currentStrategies.filter(strategy => strategy === "v4" || strategy === "v8");
+      if (quarterSlotStrategies.length) {
+        parts.push(`${quarterSlotStrategies.map(strategyLabel).join(" 和 ")} 为 1/4 仓位`);
+      }
+      if (currentStrategies.includes("v10pro")) {
+        parts.push("V10Pro 为独立1槽全仓");
+      }
+      if (currentStrategies.includes("v10")) {
+        parts.push("V10 为独立2槽、每槽1/2");
+      }
+      allOperationsSlotNoteEl.textContent = `${parts.join("；")}。输入金额直接用于每条对应策略计划的份额计算，不再按仓位比例换算。`;
+    }
+
+    function applyStrategyScope(strategies) {
+      const requested = Array.isArray(strategies) ? strategies : [];
+      currentStrategies = ALL_STRATEGIES.filter(strategy => requested.includes(strategy));
+      if (!currentStrategies.length) {
+        currentStrategies = DEFAULT_STRATEGIES.slice();
+      }
+      const scopeHas = strategy => currentStrategies.includes(strategy);
+      btnV10Pro.hidden = !scopeHas("v10pro");
+      btnV10.hidden = !scopeHas("v10");
+      btnV8.hidden = !scopeHas("v8");
+      btnV4.hidden = !scopeHas("v4");
+      const fieldByStrategy = { v4: allV4Field, v8: allV8Field, v10pro: allV10ProField, v10: allV10Field };
+      Object.entries(fieldByStrategy).forEach(([strategy, field]) => {
+        field.hidden = !scopeHas(strategy);
+      });
+      refreshConfirmScopeNoteEl.textContent = `确认后将请求后端重新获取 ${scopedStrategyLabels("、")} 全部数据。`;
+      allOperationsScopeNoteEl.textContent = `${scopedStrategyLabels("、")} 的买入计划按输入金额合并；同一 ETF 保留各策略订单价格和份额。`;
+      updateAllOperationsSlotNote();
+      if (!scopeHas(currentStrategy)) {
+        currentStrategy = scopeHas("v4") ? "v4" : currentStrategies[0];
+      }
+      setActiveButton();
+    }
+
+    function safeStorageGet(key) {
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    }
+
+    function safeStorageSet(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        // Ignore storage failures in preview-only environments.
+      }
+    }
+
+    function safeStorageRemove(key) {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // Ignore storage failures in preview-only environments.
+      }
     }
 
     function resultSource(payload) {
       if (!payload) return "-";
+      if (payload.demo_sample) return "本地示例";
       if (payload.front_cached) return "前端缓存";
       if (payload.cached) return "后端文件缓存";
       if (payload.refreshed) return "最新数据";
@@ -1566,7 +1786,7 @@
     }
 
     function showTooltip(trigger, options = {}) {
-      if (!trigger || (activeTooltipPinned && activeTooltipTrigger !== trigger && !options.pinned)) return;
+      if (!trigger || activeTooltipPinned && activeTooltipTrigger !== trigger && !options.pinned) return;
       const text = trigger.getAttribute("data-tooltip");
       if (!text) return;
       const nextTooltipEl = resolveTooltipElement(trigger);
@@ -1587,54 +1807,63 @@
     }
 
     function isHeading(line) {
-      return Object.prototype.hasOwnProperty.call(HEADING_MAP, String(line || "").trim());
+      return Object.prototype.hasOwnProperty.call(HEADING_MAP, line.trim());
     }
 
     function normalizeHeading(line) {
-      return HEADING_MAP[String(line || "").trim()] || "";
-    }
-
-    function defaultScoreFormula(strategy = currentStrategy) {
-      return strategy === "v10"
-        ? "0.5 * chg50 + 0.1 * chg30 - percent_decimal * (-0.5)"
-        : "26 * shorttimechg + 12 * longtimechg";
+      return HEADING_MAP[line.trim()] || "";
     }
 
     function isPayloadStructurallyValid(strategy, payload) {
       if (!payload || typeof payload.text !== "string") return false;
       const text = payload.text;
-      if (!text.includes("最新交易日score排行:")) return false;
-      if (strategy === "v4" && !text.includes("最新V4买入计划:")) return false;
-      if (strategy === "v10" && !text.includes("最新V10挂单计划:")) return false;
-      if (!text.includes("当前待结算持仓:")) return false;
-      if (strategy === "v10" && !text.includes("卖出计划:")) return false;
+      if (strategy === "v4") {
+        return text.includes("最新交易日score排行:")
+          && text.includes("最新V4买入计划:")
+          && text.includes("当前待结算持仓:");
+      }
+      if (!text.includes("最新交易日score排行")) return false;
+      if (!text.includes("卖出计划")) return false;
+      if (strategy === "v10pro" && !text.includes("最新V10Pro挂单计划")) return false;
+      if (strategy === "v10" && !text.includes("最新V10挂单计划")) return false;
+      if (strategy === "v8" && !text.includes("最新V8买入计划")) return false;
+
       const lines = splitLines(text);
       const summaryInfo = extractSummary(lines, payload);
       const sections = parseSections(lines, summaryInfo);
-      return (sections.ranking || []).length >= 20;
+      return (sections["最新交易日score排行"] || []).length >= 20;
     }
 
-    function normalizeStrategyResults(payload) {
+    function normalizeStrategyResults(payload, requiredStrategies) {
       const results = payload && typeof payload.results === "object" ? payload.results : {};
-      const nextMap = { v4: null, v10: null };
-      for (const strategy of ["v4", "v10"]) {
-        if (!isPayloadStructurallyValid(strategy, results[strategy])) {
-          throw new Error(`${strategy.toUpperCase()} 返回的数据不完整`);
+      const required = Array.isArray(requiredStrategies) && requiredStrategies.length
+        ? requiredStrategies
+        : DEFAULT_STRATEGIES;
+      const nextMap = { v10pro: null, v10: null, v8: null, v4: null };
+      for (const strategy of required) {
+        const result = results[strategy];
+        if (!isPayloadStructurallyValid(strategy, result)) {
+          throw new Error(`${strategyLabel(strategy)} 返回的数据不完整`);
         }
-        nextMap[strategy] = { ...results[strategy] };
+        nextMap[strategy] = { ...result };
       }
       return nextMap;
     }
 
     function saveStrategyBundleCache(payload) {
-      const normalized = normalizeStrategyResults(payload);
-      safeStorageSet(STRATEGY_BUNDLE_STORAGE_KEY, JSON.stringify({
-        cached_at: payload && payload.cached_at ? payload.cached_at : "",
-        results: normalized
-      }));
+      const normalized = normalizeStrategyResults(payload, currentStrategies);
+      safeStorageSet(
+        STRATEGY_BUNDLE_STORAGE_KEY,
+        JSON.stringify({
+          cached_at: payload && payload.cached_at ? payload.cached_at : "",
+          results: normalized
+        })
+      );
       strategyPayloadMap = {
-        v4: { ...normalized.v4, front_cached: false },
-        v10: { ...normalized.v10, front_cached: false }
+        v10pro: normalized.v10pro ? { ...normalized.v10pro, front_cached: false } : null,
+        v10: normalized.v10 ? { ...normalized.v10, front_cached: false } : null,
+        v8: normalized.v8 ? { ...normalized.v8, front_cached: false } : null,
+        v4: normalized.v4 ? { ...normalized.v4, front_cached: false } : null
       };
       return strategyPayloadMap;
     }
@@ -1644,15 +1873,17 @@
         const raw = safeStorageGet(STRATEGY_BUNDLE_STORAGE_KEY);
         if (!raw) return null;
         const parsed = JSON.parse(raw);
-        const normalized = normalizeStrategyResults(parsed);
-        strategyPayloadMap = {
-          v4: { ...normalized.v4, front_cached: true },
-          v10: { ...normalized.v10, front_cached: true }
+        const normalized = normalizeStrategyResults(parsed, currentStrategies);
+      strategyPayloadMap = {
+        v10pro: normalized.v10pro ? { ...normalized.v10pro, front_cached: true } : null,
+        v10: normalized.v10 ? { ...normalized.v10, front_cached: true } : null,
+        v8: normalized.v8 ? { ...normalized.v8, front_cached: true } : null,
+        v4: normalized.v4 ? { ...normalized.v4, front_cached: true } : null
         };
         return strategyPayloadMap;
       } catch {
         safeStorageRemove(STRATEGY_BUNDLE_STORAGE_KEY);
-        strategyPayloadMap = { v4: null, v10: null };
+        strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null };
         return null;
       }
     }
@@ -1662,16 +1893,10 @@
     }
 
     function clearStrategyPayloads() {
-      strategyPayloadMap = { v4: null, v10: null };
-      currentPayload = null;
-      currentParsed = null;
+      strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null };
       currentSplitMap = {};
       allOperationSignalCloseMap = {};
       currentSplitRequestId += 1;
-    }
-
-    function strategyLabel(strategy) {
-      return String(strategy || "").toUpperCase();
     }
 
     function buildParsedPayloadForStrategy(strategy, payload) {
@@ -1692,9 +1917,18 @@
     function allOperationAmounts() {
       return {
         v4: parseLooseNumber(allV4AmountInput.value),
-        v10: parseLooseNumber(allV10AmountInput.value)
+        v10pro: parseLooseNumber(allV10ProAmountInput.value),
+        v10: parseLooseNumber(allV10AmountInput.value),
+        v8: parseLooseNumber(allV8AmountInput.value)
       };
     }
+
+    const allOperationSlotCounts = {
+      v4: 4,
+      v8: 4,
+      v10pro: 1,
+      v10: 2
+    };
 
     function formatTotalAmount(value) {
       if (!Number.isFinite(value) || value <= 0) return "0";
@@ -1703,27 +1937,47 @@
 
     function updateAllOperationTotals() {
       const amounts = allOperationAmounts();
-      allV4TotalEl.textContent = `(总金额:${formatTotalAmount(amounts.v4 * 4)})`;
-      allV10TotalEl.textContent = `(总金额:${formatTotalAmount(amounts.v10 * 2)})`;
+      const totalElements = {
+        v4: allV4TotalEl,
+        v8: allV8TotalEl,
+        v10pro: allV10ProTotalEl,
+        v10: allV10TotalEl
+      };
+      Object.entries(totalElements).forEach(([strategy, element]) => {
+        const amount = amounts[strategy];
+        const total = Number.isFinite(amount) && amount > 0
+          ? amount * allOperationSlotCounts[strategy]
+          : 0;
+        element.textContent = `(总金额:${formatTotalAmount(total)})`;
+      });
     }
 
     function saveAllOperationAmounts() {
       safeStorageSet(ALL_OPERATION_AMOUNTS_STORAGE_KEY, JSON.stringify({
         v4: allV4AmountInput.value.trim(),
-        v10: allV10AmountInput.value.trim()
+        v10pro: allV10ProAmountInput.value.trim(),
+        v10: allV10AmountInput.value.trim(),
+        v8: allV8AmountInput.value.trim()
       }));
     }
 
     function restoreAllOperationAmounts() {
       try {
         const saved = JSON.parse(safeStorageGet(ALL_OPERATION_AMOUNTS_STORAGE_KEY) || "{}");
+        const hasV10ProValue = typeof saved.v10pro === "string";
         allV4AmountInput.value = typeof saved.v4 === "string" ? saved.v4 : ALL_OPERATION_DEFAULT_AMOUNTS.v4;
-        allV10AmountInput.value = typeof saved.v10 === "string" ? saved.v10 : ALL_OPERATION_DEFAULT_AMOUNTS.v10;
+        allV10ProAmountInput.value = hasV10ProValue
+          ? saved.v10pro
+          : (typeof saved.v10 === "string" ? saved.v10 : ALL_OPERATION_DEFAULT_AMOUNTS.v10pro);
+        allV10AmountInput.value = hasV10ProValue && typeof saved.v10 === "string"
+          ? saved.v10
+          : ALL_OPERATION_DEFAULT_AMOUNTS.v10;
+        allV8AmountInput.value = typeof saved.v8 === "string" ? saved.v8 : ALL_OPERATION_DEFAULT_AMOUNTS.v8;
       } catch {
-        allV4AmountInput.value = ALL_OPERATION_DEFAULT_AMOUNTS.v4;
-        allV10AmountInput.value = ALL_OPERATION_DEFAULT_AMOUNTS.v10;
+        // Ignore malformed local data and leave all operation amounts blank.
+      } finally {
+        updateAllOperationTotals();
       }
-      updateAllOperationTotals();
     }
 
     function parseSellPlanEntries(strategy, parsed) {
@@ -1737,17 +1991,23 @@
         dates.push(signalDate);
         holdSignalDates.set(code, dates);
       }
-      for (const line of parsed.pendingSells || []) {
+      for (const line of parsed.sellPlans || []) {
         const etfMatch = String(line).match(/(?:^|\|\s*)([^|()]+?)\((S[HZ]\d+)\)/);
         if (!etfMatch) continue;
+        const buyPriceMatch = String(line).match(/买入:\s*(?:\d{4}-\d{2}-\d{2}\s+)?([0-9.]+)/)
+          || String(line).match(/买入价:([0-9.]+)/);
+        if (!buyPriceMatch) continue;
+        const buyPrice = Number(buyPriceMatch[1]);
+        if (!Number.isFinite(buyPrice) || buyPrice <= 0) continue;
         const code = etfMatch[2];
         const signalDate = String(line).match(/信号日:(\d{4}-\d{2}-\d{2})/)?.[1]
           || holdSignalDates.get(code)?.shift()
           || "";
         entries.push({
           strategy,
-          name: etfMatch[1].trim().replace(/^\[[^\]]+\]/, ""),
+          name: etfMatch[1].trim(),
           code,
+          buyPrice,
           signalDate
         });
       }
@@ -1756,7 +2016,7 @@
 
     function allOperationSignalCloseRequests() {
       const requests = [];
-      for (const strategy of ["v4", "v10"]) {
+      for (const strategy of currentStrategies) {
         const payload = strategyPayloadMap[strategy];
         if (!payload) continue;
         const parsed = buildParsedPayloadForStrategy(strategy, payload);
@@ -1770,20 +2030,23 @@
     async function refreshAllOperationSignalCloses() {
       const items = allOperationSignalCloseRequests();
       const requestId = ++allOperationSignalCloseRequestId;
-      if (!items.length || !currentPassword.trim()) return;
+      if (!items.length || !currentPassword.trim() || DEMO_MODE) return;
+
       try {
-        const payload = await fetchJson(buildApiUrl("/api/fund/signal-closes", { items: items.join(",") }));
+        const payload = await fetchJson(buildApiUrl("/api/fund/signal-closes", {
+          items: items.join(",")
+        }));
         if (requestId !== allOperationSignalCloseRequestId) return;
         allOperationSignalCloseMap = { ...allOperationSignalCloseMap, ...(payload.items || {}) };
         if (allOperationsDialog.open) renderAllOperations();
       } catch {
-        // Missing signal closes stay unavailable instead of using actual buy prices.
+        // Sell quantities stay unavailable rather than falling back to actual buy prices.
       }
     }
 
     function allOperationSplitCodes() {
       const codes = [];
-      for (const strategy of ["v4", "v10"]) {
+      for (const strategy of currentStrategies) {
         const payload = strategyPayloadMap[strategy];
         if (!payload) continue;
         const parsed = buildParsedPayloadForStrategy(strategy, payload);
@@ -1796,7 +2059,8 @@
     async function refreshAllOperationSplitMap() {
       const codes = allOperationSplitCodes();
       const requestId = ++allOperationSplitRequestId;
-      if (!codes.length || !currentPassword.trim()) return;
+      if (!codes.length || !currentPassword.trim() || DEMO_MODE) return;
+
       try {
         const payload = await fetchJson(buildApiUrl("/api/fund/splits", {
           codes: codes.join(","),
@@ -1806,7 +2070,7 @@
         currentSplitMap = { ...currentSplitMap, ...(payload.items || {}) };
         if (allOperationsDialog.open) renderAllOperations();
       } catch {
-        // The plans remain usable when split information is unavailable.
+        // Keep the operation plan usable when split information is unavailable.
       }
     }
 
@@ -1854,7 +2118,8 @@
     }
 
     function renderAllStrategyCompoundMultipliers() {
-      allStrategyCompoundMultipliersEl.innerHTML = ["v4", "v10"].map(strategy => {
+      const strategies = currentStrategies;
+      allStrategyCompoundMultipliersEl.innerHTML = strategies.map(strategy => {
         const payload = strategyPayloadMap[strategy];
         const parsed = payload ? buildParsedPayloadForStrategy(strategy, payload) : null;
         const multiplier = formatCompoundMultiplier(parsed?.summaryInfo?.summary?.latestAccount);
@@ -1864,9 +2129,10 @@
 
     function renderAllOperations() {
       const amounts = allOperationAmounts();
+      const strategies = currentStrategies;
       renderAllStrategyCompoundMultipliers();
-      if (!strategyPayloadMap.v4 || !strategyPayloadMap.v10) {
-        allOperationsSummaryEl.innerHTML = '<span class="result-chip bad">请先获取 V4 / V10 最新数据</span>';
+      if (strategies.some(strategy => !strategyPayloadMap[strategy])) {
+        allOperationsSummaryEl.innerHTML = `<span class="result-chip bad">请先获取 ${strategies.map(strategyLabel).join(" / ")} 最新数据</span>`;
         allBuyPlanListEl.innerHTML = renderEmptyState("暂无完整策略结果");
         allSellPlanListEl.innerHTML = renderEmptyState("暂无完整策略结果");
         return;
@@ -1874,18 +2140,19 @@
 
       const buyLegs = [];
       const sellLegs = [];
-      for (const strategy of ["v4", "v10"]) {
+      for (const strategy of strategies) {
         const amount = amounts[strategy];
         if (!Number.isFinite(amount) || amount <= 0) continue;
         const parsed = buildParsedPayloadForStrategy(strategy, strategyPayloadMap[strategy]);
+
         for (const entry of parsed.sizingEntries) {
           const signalClose = Number(entry.signalClose);
           const orderPrice = Number(entry.orderPrice || signalClose);
           const shares = floorToHundreds(amount / signalClose);
-          if (!shares || !Number.isFinite(orderPrice)) continue;
+          if (!shares) continue;
           buyLegs.push({
             strategy,
-            name: entry.name.replace(/^\[[^\]]+\]/, ""),
+            name: entry.name,
             code: entry.code,
             amount,
             price: orderPrice,
@@ -1893,11 +2160,17 @@
             estimatedCost: shares * orderPrice
           });
         }
+
         for (const entry of parseSellPlanEntries(strategy, parsed)) {
           const signalClose = Number(allOperationSignalCloseMap[`${entry.code}@${entry.signalDate}`]);
           const shares = floorToHundreds(amount / signalClose);
           if (!shares) continue;
-          sellLegs.push({ ...entry, amount, shares, estimatedCost: 0 });
+          sellLegs.push({
+            ...entry,
+            amount,
+            shares,
+            estimatedCost: 0
+          });
         }
       }
 
@@ -1907,6 +2180,7 @@
       const totalEstimatedCost = buyLegs.reduce((total, leg) => total + leg.estimatedCost, 0);
       const totalBuyShares = buyLegs.reduce((total, leg) => total + leg.shares, 0);
       const totalSellShares = sellLegs.reduce((total, leg) => total + leg.shares, 0);
+
       allOperationsSummaryEl.innerHTML = `
         <span class="meta-pill">买入 ${buyGroups.length} 只 ETF</span>
         <span class="meta-pill">计划金额 ${escapeHtml(formatNumber(totalRequested, 2))}</span>
@@ -1919,8 +2193,8 @@
     }
 
     function openAllOperations() {
-      if (!strategyPayloadMap.v4 || !strategyPayloadMap.v10) {
-        setStatus("请先获取 V4 / V10 最新数据", true);
+      if (currentStrategies.some(strategy => !strategyPayloadMap[strategy])) {
+        setStatus(`请先获取 ${scopedStrategyLabels(" / ")} 最新数据`, true);
         return;
       }
       allOperationsDialog.showModal();
@@ -1928,6 +2202,19 @@
       renderAllOperations();
       void refreshAllOperationSplitMap();
       void refreshAllOperationSignalCloses();
+    }
+
+    function defaultScoreFormula(strategy) {
+      if (strategy === "v8") {
+        return "8 * chg10 + 4 * chg50 - 8 * last1chg (last1chg=(n-1收盘价-n-1开盘价)/n-2收盘价)";
+      }
+      if (strategy === "v4") {
+        return "26 * shorttimechg + 12 * longtimechg";
+      }
+      if (strategy === "v10pro") {
+        return "0.75*chg50+0.1*chg30-percent_decimal*(-1.75)";
+      }
+      return "0.5*chg50+0.1*chg30-percent_decimal*(-0.5)";
     }
 
     function extractSummary(lines, payload) {
@@ -1955,16 +2242,23 @@
           summary.stats = line;
           continue;
         }
-        if (!summary.latestAccount && line.includes("最新一次卖出账户收益")) {
+        if (
+          !summary.latestAccount &&
+          (
+            line.includes("最新一卖出账户收益")
+            || line.includes("最新一次卖出账户收益")
+          )
+        ) {
           summary.latestAccount = line;
           continue;
         }
-        if (!summary.yearlyTitle && line.includes("月度卖出收益")) {
+        if (!summary.yearlyTitle && (line.includes("年度收益") || line.includes("月度卖出收益"))) {
           summary.yearlyTitle = line;
           const yearlyLines = [];
           for (let j = i + 1; j < lines.length; j += 1) {
             const next = lines[j].trim();
-            if (!next || isHeading(next)) break;
+            if (!next) break;
+            if (isHeading(next)) break;
             yearlyLines.push(next);
           }
           summary.yearlyLines = yearlyLines;
@@ -1975,7 +2269,7 @@
         summary,
         resultLines: [
           summary.latestTrade || "最新交易日: -",
-          summary.scoreFormula || `score公式: ${defaultScoreFormula()}`,
+          summary.scoreFormula || `score公式: ${defaultScoreFormula(payload.strategy)}`,
           `最后缓存时间: ${payload.cached_at || "-"}`,
           `结果来源: ${resultSource(payload)}`,
           ...(summary.stats ? [summary.stats] : []),
@@ -1987,14 +2281,10 @@
     }
 
     function parseSections(lines, summaryInfo) {
-      const sections = {
-        hits: [],
-        sells: [],
-        ranking: [],
-        buyPlan: [],
-        holds: [],
-        pendingSells: []
-      };
+      const sections = {};
+      SECTION_NAMES.forEach(name => {
+        sections[name] = [];
+      });
 
       const excluded = new Set();
       if (summaryInfo.summary.latestAccount) excluded.add(summaryInfo.summary.latestAccount);
@@ -2004,9 +2294,7 @@
       const headingIndexes = [];
       lines.forEach((line, index) => {
         const name = normalizeHeading(line);
-        if (name) {
-          headingIndexes.push({ index, name });
-        }
+        if (name) headingIndexes.push({ index, name });
       });
 
       for (let i = 0; i < headingIndexes.length; i += 1) {
@@ -2049,6 +2337,92 @@
       return index >= 0 ? String(line).slice(index + 1).trim() : String(line || "-").trim() || "-";
     }
 
+    function countMeaningfulLines(lines, options = {}) {
+      return filterMeaningfulLines(lines, options).length;
+    }
+
+    function filterMeaningfulLines(lines, options = {}) {
+      const skipPrefix = options.skipPrefix || "";
+      return (lines || []).filter(line => {
+        if (!line || line === "无") return false;
+        if (skipPrefix && line.startsWith(skipPrefix)) return false;
+        return true;
+      });
+    }
+
+    function isBuyPlanEtfLine(line) {
+      return /^(.+?)\((S[HZ]\d+)\)/.test(String(line || ""));
+    }
+
+    function filterBuyPlanLines(lines, options = {}) {
+      return filterMeaningfulLines(lines, options).filter(isBuyPlanEtfLine);
+    }
+
+    function formatCountLabel(count) {
+      return count > 0 ? `${count}份` : "无";
+    }
+
+    function resolveStatsDisplay(summaryStats) {
+      const currentStats = String(summaryStats || "").trim();
+      return {
+        primary: currentStats || "近交易日统计: -",
+        secondary: ""
+      };
+    }
+
+    function renderTooltipChip(label, reason, className = "flag-chip") {
+      if (!reason) {
+        return `<span class="${className}">${escapeHtml(label)}</span>`;
+      }
+      return `<button class="${className} tooltip-trigger" type="button" data-tooltip="${escapeHtml(reason)}" title="${escapeHtml(reason)}" aria-label="${escapeHtml(`${label}: ${reason}`)}">${escapeHtml(label)}</button>`;
+    }
+
+    function parsePercentValue(line) {
+      const matched = String(line || "").match(/([-+]?\d+(?:\.\d+)?)%/);
+      return matched ? Number(matched[1]) : NaN;
+    }
+
+    function parseLatestAccountInfo(line) {
+      const matched = String(line || "").match(/([-+]?\d+(?:\.\d+)?)%.*?实际卖出日期[:：]?(\d{4}-\d{2}-\d{2})/);
+      if (!matched) {
+        return { value: NaN, date: "" };
+      }
+      return { value: Number(matched[1]), date: matched[2] };
+    }
+
+    function parseLatestCompoundMultiplier(line) {
+      const matched = String(line || "").match(/复利倍数[:：]?([0-9.]+)倍/);
+      return matched ? Number(matched[1]) : NaN;
+    }
+
+    function formatCompoundMultiplier(line) {
+      const value = parseLatestCompoundMultiplier(line);
+      return Number.isFinite(value) ? `${formatNumber(value, 4)}倍` : "无";
+    }
+
+    function normalizeAccountReturnValue(strategy, value) {
+      if (!Number.isFinite(value)) {
+        return NaN;
+      }
+      return strategy === "v4" || strategy === "v8" ? value / 4 : value;
+    }
+
+    function formatAccountReturn(strategy, value) {
+      const normalized = normalizeAccountReturnValue(strategy, value);
+      return Number.isFinite(normalized) ? `${formatNumber(normalized, 4)}%` : "-";
+    }
+
+    function parseRuleMap(lines) {
+      const map = {};
+      (lines || []).forEach(line => {
+        const matched = String(line).match(/^(\d+)\.\s*(.+)$/);
+        if (matched) {
+          map[matched[1]] = matched[2];
+        }
+      });
+      return map;
+    }
+
     function parseMonthLines(lines) {
       const rows = [];
       (lines || []).forEach(line => {
@@ -2063,40 +2437,623 @@
       return rows;
     }
 
-    function parseLatestAccountInfo(line) {
-      const matched = String(line || "").match(/最新一次卖出账户收益:\s*([-+]?\d+(?:\.\d+)?)%.*?实际卖出日期[:：]\s*(\d{4}-\d{2}-\d{2})/);
-      if (!matched) {
-        return { value: NaN, date: "" };
+    function formatRecentSplitDate(item) {
+      if (!item || !item.has_recent_split || !item.split_date) {
+        return "无";
       }
-      return { value: Number(matched[1]), date: matched[2] };
+      return String(item.split_date).trim() || "无";
     }
 
-    function parseReturnPercent(value) {
-      const matched = String(value || "").match(/([-+]?\d+(?:\.\d+)?)%/);
-      return matched ? Number(matched[1]) : NaN;
-    }
-
-    function formatAccountReturn(strategy, value) {
-      if (!Number.isFinite(value)) return "-";
-      const normalized = strategy === "v4" ? value / 4 : value;
-      return `${formatNumber(normalized, 4)}%`;
-    }
-
-    function parseLatestCompoundMultiplier(line) {
-      const matched = String(line || "").match(/复利倍数[:：]?([0-9.]+)倍/);
-      return matched ? Number(matched[1]) : NaN;
-    }
-
-    function formatCompoundMultiplier(line) {
-      const value = parseLatestCompoundMultiplier(line);
-      return Number.isFinite(value) ? `${formatNumber(value, 4)}倍` : "无";
-    }
-
-    function renderTooltipChip(label, reason, className = "flag-chip") {
-      if (!reason) {
-        return `<span class="${className}">${escapeHtml(label)}</span>`;
+    function formatRecentSplitRatio(item) {
+      const ratio = Number(item?.split_ratio);
+      if (!item || !item.has_recent_split || !Number.isFinite(ratio) || ratio <= 0) {
+        return "无";
       }
-      return `<button class="${className} tooltip-trigger" type="button" data-tooltip="${escapeHtml(reason)}" title="${escapeHtml(reason)}" aria-label="${escapeHtml(`${label}: ${reason}`)}">${escapeHtml(label)}</button>`;
+      return formatNumber(ratio, 4);
+    }
+
+    function formatRecentSplitInfo(item) {
+      if (!item || !item.has_recent_split) return "无";
+      return `日期 ${formatRecentSplitDate(item)}，份额 ${formatRecentSplitRatio(item)}`;
+    }
+
+    async function refreshRecentSplitMap(parsed) {
+      const sizingEntries = parsed?.sizingEntries || [];
+      const planCodes = [...(parsed?.buyPlans || []), ...(parsed?.sellPlans || [])]
+        .map(line => String(line).match(/\((S[HZ]\d+)\)/)?.[1])
+        .filter(Boolean);
+      const codes = Array.from(new Set([...sizingEntries.map(item => item.code), ...planCodes].filter(Boolean)));
+      const requestId = ++currentSplitRequestId;
+
+      if (!codes.length || !currentPassword.trim() || DEMO_MODE) {
+        currentSplitMap = {};
+        if (parsed === currentParsed) {
+          renderDialogs(parsed);
+        }
+        return;
+      }
+
+      try {
+        const payload = await fetchJson(buildApiUrl("/api/fund/splits", {
+          codes: codes.join(","),
+          recent_days: 3650
+        }));
+        if (requestId !== currentSplitRequestId) {
+          return;
+        }
+        currentSplitMap = payload.items || {};
+      } catch {
+        if (requestId !== currentSplitRequestId) {
+          return;
+        }
+        currentSplitMap = {};
+      }
+
+      if (parsed === currentParsed) {
+        renderDialogs(parsed);
+      }
+    }
+
+    function extractRankCloseMap(sections) {
+      const map = new Map();
+      const rankLines = sections["最新交易日score排行"] || [];
+      for (const line of rankLines) {
+        const matched = line.match(/\((S[HZ]\d+)\).*?close:([0-9.]+)/);
+        if (matched) {
+          map.set(matched[1], Number(matched[2]));
+        }
+      }
+      return map;
+    }
+
+    function buildV10SellPlanDisplayLines(parsed) {
+      const sellPlans = parsed?.sellPlans || [];
+      return sellPlans;
+    }
+
+    function extractBuyPlanEntries(sections) {
+      const closeMap = extractRankCloseMap(sections);
+      const entries = [];
+      const buyLines = sections["买入计划"] || [];
+
+      function orderPriceFromSignalClose(signalClose) {
+        return Number((signalClose * ORDER_PRICE_MULTIPLIER).toFixed(3));
+      }
+
+      for (const line of buyLines) {
+        if (line === "无") continue;
+        if (line.startsWith("卖出前持仓数:")) continue;
+        const baseMatch = line.match(/^(.+?)\((S[HZ]\d+)\)/);
+        if (!baseMatch) continue;
+
+        const name = baseMatch[1];
+        const code = baseMatch[2];
+        if (currentStrategy === "v4") {
+          const planPrice = closeMap.get(code);
+          if (!Number.isFinite(planPrice) || planPrice <= 0) continue;
+          entries.push({
+            name,
+            code,
+            signalClose: planPrice,
+            orderPrice: orderPriceFromSignalClose(planPrice),
+            priceLabel: "挂单价"
+          });
+          continue;
+        }
+        const signalCloseMatch = line.match(/信号日收盘:([0-9.]+)/);
+        const signalClose = signalCloseMatch
+          ? Number(signalCloseMatch[1])
+          : closeMap.get(code) ?? NaN;
+
+        if (!Number.isFinite(signalClose) || signalClose <= 0) continue;
+
+        entries.push({
+          name,
+          code,
+          signalClose,
+          orderPrice: orderPriceFromSignalClose(signalClose),
+          priceLabel: "挂单价"
+        });
+      }
+
+      return entries;
+    }
+
+    function parseDisplayLine(line) {
+      const text = String(line || "").trim();
+      if (!text || text === "无") return null;
+
+      const etfMatch = text.match(/^(.+?)\((S[HZ]\d+)\)(.*)$/);
+      if (!etfMatch) {
+        return {
+          title: text,
+          segments: []
+        };
+      }
+
+      const [, name, code, rawTail] = etfMatch;
+      const tail = rawTail.trim().replace(/^\|\s*/, "");
+      const segments = tail
+        .split(/\s+\|\s+|；/g)
+        .map(item => item.trim().replace(/[。]+$/, ""))
+        .filter(Boolean);
+
+      return {
+        title: `${name} (${code})`,
+        segments
+      };
+    }
+
+    function renderEmptyState(message) {
+      return `<div class="empty">${escapeHtml(message)}</div>`;
+    }
+
+    function renderRecordCards(lines, emptyText = "暂无数据", options = {}) {
+      const cleaned = (lines || []).filter(line => line && line !== "无");
+      if (!cleaned.length) {
+        return renderEmptyState(emptyText);
+      }
+
+      return cleaned.map(line => {
+        const parsed = parseDisplayLine(line);
+        if (!parsed) return "";
+        const code = String(line).match(/\((S[HZ]\d+)\)/)?.[1];
+        const title = options.showSplitRatio && code
+          ? `${parsed.title} | 最近拆分: ${formatRecentSplitInfo(currentSplitMap[code])}`
+          : parsed.title;
+        const chips = parsed.segments.length
+          ? `<div class="chip-row">${parsed.segments.map(segment => `<span class="chip">${escapeHtml(segment)}</span>`).join("")}</div>`
+          : "";
+        return `
+          <article class="record-card">
+            <div class="record-title">${escapeHtml(title)}</div>
+            ${chips || `<div class="record-copy">${escapeHtml(line)}</div>`}
+          </article>
+        `;
+      }).join("");
+    }
+
+    function parseV10SignalDetailMap(lines, buyRuleMap, filterRuleMap) {
+      const map = new Map();
+      for (const line of lines || []) {
+        const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+variant:(V10Pro|V10)\s+score:([-\d.]+)\s+percent:([-\d.]+)\s+\|\s+long条件:([YN])\s+percent条件:([YN])\s+mid条件:([YN])\s+相对强度:([YN])\s+入选:([YN])\s+\|\s+(通过|不通过)$/);
+        if (!matched) continue;
+
+        const code = matched[3];
+        const variant = matched[4];
+        const conditions = [
+          { label: `${variant}长期`, reason: buyRuleMap["1"] || "长期涨幅进入买入区间", passed: matched[7] === "Y" },
+          { label: "涨跌幅", reason: buyRuleMap["2"] || "当日涨跌幅进入买入区间", passed: matched[8] === "Y" },
+          { label: "chg20", reason: buyRuleMap["3"] || "chg20进入买入区间", passed: matched[9] === "Y" },
+          { label: "相对强度", reason: buyRuleMap["4"] || "相对强度高于ETF池中位数-0.01", passed: matched[10] === "Y" },
+          { label: "空槽入选", reason: buyRuleMap["5"] || "次日按score填补空槽", passed: matched[11] === "Y" }
+        ];
+
+        map.set(`${variant}|${code}`, {
+          variant,
+          percent: Number(matched[6]),
+          conditions,
+          filters: matched[12] === "通过" ? [] : [{ label: "未通过", reason: filterRuleMap["1"] || `至少一个${variant}买入条件未通过` }],
+          pass: matched[12] === "通过"
+        });
+      }
+      return map;
+    }
+
+    function parseRankRows(strategy, sections) {
+      const rankLines = sections["最新交易日score排行"] || [];
+      const buyRuleMap = parseRuleMap(sections["买入条件"] || []);
+      const filterRuleMap = parseRuleMap(sections["过滤条件"] || []);
+      const detailMap = strategy === "v10" || strategy === "v10pro"
+        ? parseV10SignalDetailMap(sections["新增信号详情"] || [], buyRuleMap, filterRuleMap)
+        : new Map();
+
+      const v8BaseReason = buyRuleMap["1"] || "timechg60 >= -0.06";
+      const v8ConditionReasonMap = {
+        "2": buyRuleMap["2"] || "step2",
+        "3": buyRuleMap["3"] || "step3",
+        "4": buyRuleMap["4"] || "step4"
+      };
+      const v4BuyCodes = new Set(
+        (sections["买入计划"] || [])
+          .filter(line => /(?:挂单价|买入价)/.test(line))
+          .map(line => line.match(/\((S[HZ]\d+)\)/)?.[1])
+          .filter(Boolean)
+      );
+
+      const rows = [];
+      for (const line of rankLines) {
+        if (!/^\d+\./.test(line)) continue;
+
+        if (strategy === "v10" || strategy === "v10pro") {
+          const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+variant:(V10Pro|V10)\s+score:([-\d.]+)\s+chg10:([-\d.]+)\s+chg50:([-\d.]+)\s+signalLong:([-\d.]+)\s+chg20:([-\d.]+)\s+relValue:([-\d.]+)\s+medianRel:([-\d.]+)\s+open:([-\d.]+)\s+close:([-\d.]+)\s+percent:([-\d.]+)$/);
+          if (!matched) continue;
+
+          const rank = Number(matched[1]);
+          const code = matched[3];
+          const variant = matched[4];
+          const score = Number(matched[5]);
+          const chg10 = Number(matched[6]);
+          const chg50 = Number(matched[7]);
+          const signalLong = Number(matched[8]);
+          const chg20 = Number(matched[9]);
+          const relValue = Number(matched[10]);
+          const medianRel = Number(matched[11]);
+          const open = Number(matched[12]);
+          const close = Number(matched[13]);
+          const percent = Number(matched[14]);
+          const detail = detailMap.get(`${variant}|${code}`);
+
+          rows.push({
+            rank,
+            name: `[${variant}] ${matched[2]}`,
+            code,
+            variant,
+            score,
+            chg10,
+            chg50,
+            last1: NaN,
+            conditions: detail ? detail.conditions : [],
+            filters: detail ? detail.filters : [],
+            pass: detail ? detail.pass : false,
+            note: detail ? "" : `未读取到${strategyLabel(strategy)}条件详情。`,
+            sortMarker: "",
+            open,
+            close,
+            percent,
+            signalLong,
+            chg20,
+            relValue,
+            medianRel
+          });
+          continue;
+        }
+
+        if (strategy === "v4") {
+          const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+score:([-\d.]+)\s+short:([-\d.]+)\s+long:([-\d.]+)\s+last1:([-\d.]+|-)\s+time60:([-\d.]+|-)\s+open:([-\d.]+)\s+close:([-\d.]+)\s+percent:([-\d.]+)\s+poolChg20Ave:([-\d.]+|-)\s+candle:([YN])$/);
+          if (!matched) continue;
+
+          const rank = Number(matched[1]);
+          const code = matched[3];
+          const time60 = matched[8] === "-" ? NaN : Number(matched[8]);
+          const open = Number(matched[9]);
+          const close = Number(matched[10]);
+          const percent = Number(matched[11]);
+          const poolChg20Ave = matched[12] === "-" ? NaN : Number(matched[12]);
+          const candleOk = matched[13] === "Y";
+          const conditions = [];
+          const filters = [];
+          const selected = v4BuyCodes.has(code);
+
+          const marketOk = Number.isFinite(poolChg20Ave) && poolChg20Ave > -0.06;
+          conditions.push({ label: "市场", reason: "当日完整 ETF 池 chg20 算术平均值 > -0.06。", passed: marketOk });
+          conditions.push({ label: "前4", reason: "V4 从最新 score 排名前 4 的 ETF 中选择候选。", passed: rank <= 4 });
+          conditions.push({ label: "K线", reason: "round(open-close, 3) > 0.001，或上影线减下影线 > 100。", passed: candleOk });
+          conditions.push({ label: "计划", reason: "满足条件、仓位和重复持仓限制后进入最新买入计划。", passed: selected });
+          if (!marketOk) {
+            filters.push({ label: "市场过滤", reason: `pool chg20 平均值 ${Number.isFinite(poolChg20Ave) ? poolChg20Ave : "-"} 未高于 -0.06。` });
+          }
+
+          rows.push({
+            rank,
+            name: matched[2],
+            code,
+            score: Number(matched[4]),
+            chg10: Number(matched[5]),
+            chg50: Number(matched[6]),
+            last1: matched[7] === "-" ? NaN : Number(matched[7]),
+            conditions,
+            filters,
+            pass: selected,
+            note: selected ? "已进入 V4Pro 最新买入计划。" : "未进入 V4Pro 最新买入计划。",
+            open,
+            close,
+            percent
+          });
+          continue;
+        }
+
+        const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+score:([-\d.]+)\s+chg10:([-\d.]+)\s+chg50:([-\d.]+)\s+last1:([-\d.]+|-)\s+time60:([-\d.]+|-)\s+open:([-\d.]+)\s+close:([-\d.]+)\s+percent:([-\d.]+)$/);
+        if (!matched) continue;
+
+        const rank = Number(matched[1]);
+        const score = Number(matched[4]);
+        const chg10 = Number(matched[5]);
+        const chg50 = Number(matched[6]);
+        const last1 = Number(matched[7]);
+        const time60 = Number(matched[8]);
+        const open = Number(matched[9]);
+        const close = Number(matched[10]);
+        const percent = Number(matched[11]);
+        const roundedOpenCloseDiff = Math.round((open - close + Number.EPSILON) * 1000) / 1000;
+
+        const conditions = [];
+        const time60Ok = Number.isFinite(time60) && time60 >= -0.06;
+        conditions.push({ label: "条件2", reason: `${v8ConditionReasonMap["2"]}；且 ${v8BaseReason}`, passed: time60Ok && roundedOpenCloseDiff > 0 && rank <= 3 });
+        conditions.push({ label: "条件3", reason: `${v8ConditionReasonMap["3"]}；且 ${v8BaseReason}`, passed: time60Ok && percent < -2 && rank < 6 });
+        conditions.push({ label: "条件4", reason: `${v8ConditionReasonMap["4"]}；且 ${v8BaseReason}`, passed: time60Ok && chg50 >= -0.05 && roundedOpenCloseDiff > 0 && rank <= 3 });
+
+        const filters = [];
+        if (Number.isFinite(time60) && time60 < -0.06) {
+          filters.push({ label: "过滤1", reason: filterRuleMap["1"] || "timechg60 < -0.06" });
+        }
+        if (chg50 < 0 && chg10 < 0.08 && percent < 0) {
+          filters.push({ label: "过滤2", reason: filterRuleMap["2"] || "弱势组合过滤" });
+        }
+
+        rows.push({
+          rank,
+          name: matched[2],
+          code: matched[3],
+          score,
+          chg10,
+          chg50,
+          last1,
+          conditions,
+          filters,
+          pass: conditions.some(item => item.passed) && filters.length === 0,
+          note: filters.some(item => item.label === "过滤2") ? "" : "",
+          open,
+          close,
+          percent
+        });
+      }
+
+      return rows;
+    }
+
+    function parseRecentTrades(strategy, sections, summaryInfo) {
+      const buyRuleMap = parseRuleMap(sections["买入条件"] || []);
+      const sellRuleMap = parseRuleMap(sections["卖出条件"] || []);
+      const latestAccountInfo = parseLatestAccountInfo(summaryInfo.summary.latestAccount);
+      const hitLines = (sections["最近命中明细"] || []).filter(line => line && line !== "无" && !line.startsWith("命中/挂单未成"));
+      const sellLines = (sections["最近卖出明细"] || []).filter(line => line && line !== "无");
+      const sellQueues = new Map();
+
+      function enqueueSell(key, payload) {
+        const queue = sellQueues.get(key) || [];
+        queue.push(payload);
+        sellQueues.set(key, queue);
+      }
+
+      function dequeueSell(key) {
+        const queue = sellQueues.get(key) || [];
+        const next = queue.shift() || null;
+        sellQueues.set(key, queue);
+        return next;
+      }
+
+      if (strategy === "v4") {
+        const pendingQueues = new Map();
+        const enqueuePending = (key, payload) => {
+          const queue = pendingQueues.get(key) || [];
+          queue.push(payload);
+          pendingQueues.set(key, queue);
+        };
+        const dequeuePending = key => {
+          const queue = pendingQueues.get(key) || [];
+          const next = queue.shift() || null;
+          pendingQueues.set(key, queue);
+          return next;
+        };
+
+        for (const line of sellLines) {
+          const matched = line.match(/^触发卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+实际卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+卖出:开盘\s+([0-9.]+)\s+\|\s+收益:([-\d.]+)%$/);
+          if (!matched) continue;
+          enqueueSell(`${matched[4]}|${matched[5]}|${matched[6]}`, {
+            triggerDate: matched[1],
+            sellDate: matched[2],
+            sellPrice: matched[7],
+            profit: `${matched[8]}%`
+          });
+        }
+
+        for (const line of sections["卖出计划"] || []) {
+          const matched = line.match(/^触发卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+实际卖出日:(\d{4}-\d{2}-\d{2})\s+开盘待卖/);
+          if (!matched) continue;
+          enqueuePending(`${matched[3]}|${matched[4]}|${matched[5]}`, {
+            triggerDate: matched[1],
+            sellDate: matched[6]
+          });
+        }
+
+        return hitLines.map(line => {
+          const matched = line.match(/^(\d{4}-\d{2}-\d{2})\s+命中\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+排名:(\d+)\s+\|\s+score:([-\d.]+)\s+\|\s+买入日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入价:([0-9.]+)$/);
+          if (!matched) return null;
+
+          const key = `${matched[3]}|${matched[6]}|${matched[7]}`;
+          const sellInfo = dequeueSell(key);
+          const pendingInfo = dequeuePending(key);
+          const accountReturn = sellInfo
+            ? formatAccountReturn(strategy, parsePercentValue(sellInfo.profit))
+            : "-";
+
+          return {
+            name: matched[2],
+            code: matched[3],
+            buyCondition: {
+              label: `排名${matched[4]}`,
+              reason: `信号日: ${matched[1]}\nscore: ${matched[5]}`
+            },
+            sellCondition: sellInfo
+              ? { label: "已卖出", reason: `触发卖出日: ${sellInfo.triggerDate}` }
+              : pendingInfo
+                ? { label: "待卖出", reason: `触发卖出日: ${pendingInfo.triggerDate}` }
+                : null,
+            buyDate: matched[6],
+            buyPrice: matched[7],
+            sellDate: sellInfo?.sellDate || pendingInfo?.sellDate || "-",
+            sellPrice: sellInfo?.sellPrice || "-",
+            profit: sellInfo?.profit || "-",
+            accountReturn
+          };
+        }).filter(Boolean);
+      }
+
+      if (strategy === "v10" || strategy === "v10pro") {
+        for (const line of sellLines) {
+          const matched = line.match(/^实际卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+\[(V10Pro|V10)\](.+?)\((S[HZ]\d+)\)\s+\|\s+信号日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+卖出:([0-9.]+)\s+\|\s+单笔收益:([-\d.]+)%\s+\|\s+计入收益:([-\d.]+)%$/);
+          if (!matched) continue;
+          const variant = matched[2];
+          enqueueSell(`${variant}|${matched[4]}|${matched[5]}|${matched[6]}|${matched[7]}`, {
+            sellDate: matched[1],
+            sellPrice: matched[8],
+            profit: `${matched[9]}%`,
+            accountReturn: `${matched[10]}%`,
+            sellCondition: {
+              label: "条件1",
+              reason: sellRuleMap["1"] || `${variant}日内涨跌幅进入卖出区间`
+            }
+          });
+        }
+
+        return hitLines.map(line => {
+          const matched = line.match(/^(\d{4}-\d{2}-\d{2})\s+命中\s+\[(V10Pro|V10)\](.+?)\((S[HZ]\d+)\)\s+\|\s+排名:(\d+)\s+\|\s+score:([-\d.]+)\s+\|\s+买入日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入价:([0-9.]+)$/);
+          if (!matched) return null;
+          const variant = matched[2];
+          const sellInfo = dequeueSell(`${variant}|${matched[4]}|${matched[1]}|${matched[7]}|${matched[8]}`);
+          return {
+            name: `[${variant}] ${matched[3]}`,
+            code: matched[4],
+            buyCondition: {
+              label: `${variant} 排名${matched[5]}`,
+              reason: `${variant}四项买入条件通过\n信号日: ${matched[1]}\nscore: ${matched[6]}`
+            },
+            sellCondition: sellInfo?.sellCondition || null,
+            buyDate: matched[7],
+            buyPrice: matched[8],
+            sellDate: sellInfo?.sellDate || "-",
+            sellPrice: sellInfo?.sellPrice || "-",
+            profit: sellInfo?.profit || "-",
+            accountReturn: sellInfo?.accountReturn || "-"
+          };
+        }).filter(Boolean);
+      }
+
+      if (strategy === "v8") {
+        for (const line of sellLines) {
+          const matched = line.match(/^触发卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+实际卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+卖出:开盘\s+([0-9.]+)\s+\|\s+收益:([-\d.]+)%\s+\|\s+卖出原因:卖出条件(\d+)$/);
+          if (!matched) continue;
+
+          const profitValue = Number(matched[8]);
+          const payload = {
+            triggerDate: matched[1],
+            sellDate: matched[2],
+            sellPrice: matched[7],
+            profit: `${matched[8]}%`,
+            accountReturn: formatAccountReturn(strategy, profitValue),
+            sellCondition: {
+              label: `条件${matched[9]}`,
+              reason: sellRuleMap[matched[9]] || `卖出条件${matched[9]}`
+            }
+          };
+          enqueueSell(`${matched[4]}|${matched[5]}|${matched[6]}`, payload);
+        }
+
+        return hitLines.map(line => {
+          const matched = line.match(/^(\d{4}-\d{2}-\d{2})\s+命中\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+排名:(\d+)\s+\|\s+score:[-\d.]+\s+\|\s+符合:(step\d+)\s+\|\s+条件:(.+?)\s+\|\s+买入日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入价:([0-9.]+)$/);
+          if (!matched) return null;
+
+          const stepNumber = matched[5].replace("step", "");
+          const sellInfo = dequeueSell(`${matched[3]}|${matched[7]}|${matched[8]}`);
+          const fallbackAccountReturn = sellInfo && latestAccountInfo.date === sellInfo.sellDate && Number.isFinite(latestAccountInfo.value)
+            ? `${formatNumber(latestAccountInfo.value, 4)}%`
+            : "-";
+          const accountReturn = sellInfo ? (sellInfo.accountReturn || fallbackAccountReturn || sellInfo.profit) : "-";
+
+          return {
+            name: matched[2],
+            code: matched[3],
+            buyCondition: {
+              label: `条件${stepNumber}`,
+              reason: buyRuleMap[String(Number(stepNumber) + 1)] || matched[6]
+            },
+            sellCondition: sellInfo ? sellInfo.sellCondition : null,
+            buyDate: matched[7],
+            buyPrice: matched[8],
+            sellDate: sellInfo ? sellInfo.sellDate : "-",
+            sellPrice: sellInfo ? sellInfo.sellPrice : "-",
+            profit: sellInfo ? sellInfo.profit : "-",
+            accountReturn
+          };
+        }).filter(Boolean);
+      }
+
+      for (const line of sellLines) {
+        const matched = line.match(/^实际卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+信号日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+卖出:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+单笔收益:([-\d.]+)%\s+\|\s+计入收益:([-\d.]+)%/);
+        if (!matched) continue;
+
+        enqueueSell(`${matched[3]}|${matched[4]}|${matched[5]}|${matched[6]}`, {
+          sellDate: matched[7],
+          sellPrice: matched[8],
+          profit: `${matched[9]}%`,
+          accountReturn: `${matched[10]}%`
+        });
+      }
+
+      return hitLines.map(line => {
+        const matched = line.match(/^(\d{4}-\d{2}-\d{2})\s+命中\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+score:[-\d.]+\s+\|\s+挂单:([0-9.]+)\s+\|\s+计划买入日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入价:([0-9.]+)\s+\|\s+计划卖出日:(\d{4}-\d{2}-\d{2})\s+开盘$/);
+        if (!matched) return null;
+
+        const sellInfo = dequeueSell(`${matched[3]}|${matched[1]}|${matched[5]}|${matched[6]}`);
+        let sellCondition = null;
+        if (sellInfo) {
+          const inferredCondition = sellInfo.sellDate > matched[7] ? "2" : "1";
+          sellCondition = {
+            label: `条件${inferredCondition}`,
+            reason: sellRuleMap[inferredCondition] || `卖出条件${inferredCondition}`
+          };
+        }
+
+        const fallbackAccountReturn = sellInfo && latestAccountInfo.date === sellInfo.sellDate && Number.isFinite(latestAccountInfo.value)
+          ? `${formatNumber(latestAccountInfo.value, 4)}%`
+          : "-";
+        const accountReturn = sellInfo ? (sellInfo.accountReturn || fallbackAccountReturn || sellInfo.profit) : "-";
+
+        return {
+          name: matched[2],
+          code: matched[3],
+          buyCondition: {
+            label: "-",
+            reason: "V10 原始最近命中明细未提供买入条件编号。"
+          },
+          sellCondition,
+          buyDate: matched[5],
+          buyPrice: matched[6],
+          sellDate: sellInfo ? sellInfo.sellDate : "-",
+          sellPrice: sellInfo ? sellInfo.sellPrice : "-",
+          profit: sellInfo ? sellInfo.profit : "-",
+          accountReturn
+        };
+      }).filter(Boolean);
+    }
+
+    function buildParsedPayload(payload) {
+      const lines = splitLines(payload.text);
+      const summaryInfo = extractSummary(lines, payload);
+      const sections = parseSections(lines, summaryInfo);
+      const buyPlans = sections["买入计划"] || [];
+      const holds = sections["当前待结算持仓"] || [];
+      const sellPlans = sections["卖出计划"] || [];
+      const rankRows = parseRankRows(currentStrategy, sections);
+      const recentTrades = parseRecentTrades(currentStrategy, sections, summaryInfo);
+      const sizingEntries = extractBuyPlanEntries(sections);
+      const yearlyMonths = parseMonthLines(summaryInfo.summary.yearlyLines);
+      const latestAccountInfo = parseLatestAccountInfo(summaryInfo.summary.latestAccount);
+
+      return {
+        lines,
+        sections,
+        summaryInfo,
+        buyPlans,
+        holds,
+        sellPlans,
+        rankRows,
+        recentTrades,
+        sizingEntries,
+        yearlyMonths,
+        latestAccountInfo
+      };
     }
 
     function renderFlagList(items) {
@@ -2111,405 +3068,6 @@
         return '<span class="flag-chip empty">无</span>';
       }
       return items.map(item => renderTooltipChip(item.label, item.reason, item.passed ? "flag-chip ok" : "flag-chip bad")).join("");
-    }
-
-    function renderEmptyState(message) {
-      return `<div class="empty">${escapeHtml(message)}</div>`;
-    }
-
-    function countMeaningfulLines(lines, options = {}) {
-      return filterMeaningfulLines(lines, options).length;
-    }
-
-    function filterMeaningfulLines(lines, options = {}) {
-      const skipPrefix = options.skipPrefix || "";
-      return (lines || []).filter(line => {
-        if (!line || line === "无") return false;
-        if (skipPrefix && line.startsWith(skipPrefix)) return false;
-        return true;
-      });
-    }
-
-    function filterBuyPlanLines(lines) {
-      return filterMeaningfulLines(lines).filter(line => (
-        !line.startsWith("卖出前持仓数:")
-        && !line.startsWith("卖出后预计持仓数:")
-      ));
-    }
-
-    function parseDisplayLine(line) {
-      const text = String(line || "").trim();
-      if (!text || text === "无") return null;
-
-      const etfMatch = text.match(/^(.+?)\((S[HZ]\d+)\)(.*)$/);
-      if (!etfMatch) {
-        return { title: text, segments: [] };
-      }
-
-      const [, name, code, rawTail] = etfMatch;
-      const tail = rawTail.trim().replace(/^\|\s*/, "");
-      const segments = tail
-        .split(/\s+\|\s+/)
-        .map(item => item.trim())
-        .filter(Boolean);
-
-      return {
-        title: `${name} (${code})`,
-        segments
-      };
-    }
-
-    function renderRecordCards(lines, emptyText = "暂无数据") {
-      const cleaned = (lines || []).filter(line => line && line !== "无");
-      if (!cleaned.length) {
-        return renderEmptyState(emptyText);
-      }
-
-      return cleaned.map(line => {
-        const parsed = parseDisplayLine(line);
-        if (!parsed) return "";
-        const chips = parsed.segments.length
-          ? `<div class="chip-row">${parsed.segments.map(segment => `<span class="chip">${escapeHtml(segment)}</span>`).join("")}</div>`
-          : "";
-        return `
-          <article class="record-card">
-            <div class="record-title">${escapeHtml(parsed.title)}</div>
-            ${chips || `<div class="record-copy">${escapeHtml(line)}</div>`}
-          </article>
-        `;
-      }).join("");
-    }
-
-    function extractRankCloseMap(lines) {
-      const map = new Map();
-      for (const line of lines || []) {
-        const matched = line.match(/\((S[HZ]\d+)\).*?close:([0-9.]+)/);
-        if (matched) {
-          map.set(matched[1], Number(matched[2]));
-        }
-      }
-      return map;
-    }
-
-    function extractBuyPlanEntries(lines, rankLines) {
-      const closeMap = extractRankCloseMap(rankLines);
-      const entries = [];
-      for (const line of lines || []) {
-        if (!line || line === "无" || line.startsWith("卖出前持仓数:") || line.startsWith("卖出后预计持仓数:")) {
-          continue;
-        }
-        const matched = line.match(/^(.+?)\((S[HZ]\d+)\)/);
-        if (!matched) continue;
-        const signalCloseMatch = line.match(/信号日收盘:([0-9.]+)/);
-        const orderPriceMatch = line.match(/(?:买入价|挂单价):([0-9.]+)/)
-          || line.match(/计划下一交易日挂单\s*([0-9.]+)/);
-        const signalClose = signalCloseMatch
-          ? Number(signalCloseMatch[1])
-          : closeMap.get(matched[2]) ?? NaN;
-        const orderPrice = orderPriceMatch ? Number(orderPriceMatch[1]) : NaN;
-        if (!Number.isFinite(signalClose) || signalClose <= 0) continue;
-        entries.push({
-          name: matched[1],
-          code: matched[2],
-          signalClose,
-          orderPrice
-        });
-      }
-      return entries;
-    }
-
-    function parseBuyPlanState(lines) {
-      const selectedCodes = new Set();
-      const notedCodes = new Set();
-
-      (lines || []).forEach(line => {
-        const matched = String(line || "").match(/^(.+?)\((S[HZ]\d+)\)/);
-        if (!matched) return;
-        if (/(?:买入价|挂单价):|计划下一交易日挂单\s*[0-9.]+/.test(line)) {
-          selectedCodes.add(matched[2]);
-        } else {
-          notedCodes.add(matched[2]);
-        }
-      });
-
-      return { selectedCodes, notedCodes };
-    }
-
-    function parseRuleMap(lines) {
-      const map = {};
-      (lines || []).forEach(line => {
-        const matched = String(line).match(/^(\d+)\.\s*(.+)$/);
-        if (matched) {
-          map[matched[1]] = matched[2];
-        }
-      });
-      return map;
-    }
-
-    function parseV10SignalDetailMap(lines, buyRuleMap, filterRuleMap) {
-      const map = new Map();
-      for (const line of lines || []) {
-        const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+variant:V10\s+score:([-\d.]+)\s+percent:([-\d.]+)\s+\|\s+long条件:([YN])\s+percent条件:([YN])\s+mid条件:([YN])\s+相对强度:([YN])\s+入选:([YN])\s+\|\s+(通过|不通过)$/);
-        if (!matched) continue;
-
-        map.set(matched[3], {
-          conditions: [
-            { label: "长期涨幅", reason: buyRuleMap["1"] || "0.03 < chg50 < 0.51", passed: matched[6] === "Y" },
-            { label: "涨跌幅", reason: buyRuleMap["2"] || "-8.0 < percent < -1.15", passed: matched[7] === "Y" },
-            { label: "chg20", reason: buyRuleMap["3"] || "0.02 < chg20 < 0.20", passed: matched[8] === "Y" },
-            { label: "相对强度", reason: buyRuleMap["4"] || "chg10 > ETF池中位数 - 0.015", passed: matched[9] === "Y" },
-            { label: "空槽入选", reason: buyRuleMap["5"] || "次日按score填补空槽", passed: matched[10] === "Y" }
-          ],
-          filters: matched[11] === "通过"
-            ? []
-            : [{ label: "未通过", reason: filterRuleMap["1"] || "至少一个V10买入条件未通过" }],
-          pass: matched[11] === "通过"
-        });
-      }
-      return map;
-    }
-
-    function parseRankRows(sections) {
-      const rankLines = sections.ranking || [];
-      const buyRuleMap = parseRuleMap(sections.buyRules || []);
-      const filterRuleMap = parseRuleMap(sections.filterRules || []);
-      const detailMap = currentStrategy === "v10"
-        ? parseV10SignalDetailMap(sections.signalDetails || [], buyRuleMap, filterRuleMap)
-        : new Map();
-      const buyState = parseBuyPlanState(sections.buyPlan || []);
-      const rows = [];
-
-      for (const line of rankLines) {
-        if (currentStrategy === "v10") {
-          const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+variant:V10\s+score:([-\d.]+)\s+chg10:([-\d.]+)\s+chg50:([-\d.]+)\s+signalLong:([-\d.]+)\s+chg20:([-\d.]+)\s+relValue:([-\d.]+)\s+medianRel:([-\d.]+)\s+open:([-\d.]+)\s+close:([-\d.]+)\s+percent:([-\d.]+)$/);
-          if (!matched) continue;
-          const detail = detailMap.get(matched[3]);
-          rows.push({
-            rank: Number(matched[1]),
-            name: matched[2],
-            code: matched[3],
-            score: Number(matched[4]),
-            chg10: Number(matched[5]),
-            chg50: Number(matched[6]),
-            last1: NaN,
-            time60: NaN,
-            percent: Number(matched[13]),
-            conditions: detail ? detail.conditions : [],
-            filters: detail ? detail.filters : [],
-            pass: detail ? detail.pass : false,
-            note: detail ? "" : "未读取到 V10 条件详情。"
-          });
-          continue;
-        }
-
-        const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+score:([-\d.]+)\s+short:([-\d.]+)\s+long:([-\d.]+)\s+last1:([-\d.]+|-)\s+time60:([-\d.]+|-)\s+open:([-\d.]+)\s+close:([-\d.]+)\s+percent:([-\d.]+)\s+poolChg20Ave:([-\d.]+|-)\s+candle:([YN])$/);
-        if (!matched) continue;
-
-        const rank = Number(matched[1]);
-        const code = matched[3];
-        const score = Number(matched[4]);
-        const chg10 = Number(matched[5]);
-        const chg50 = Number(matched[6]);
-        const last1 = matched[7] === "-" ? NaN : Number(matched[7]);
-        const time60 = matched[8] === "-" ? NaN : Number(matched[8]);
-        const open = Number(matched[9]);
-        const close = Number(matched[10]);
-        const percent = Number(matched[11]);
-        const poolChg20Ave = matched[12] === "-" ? NaN : Number(matched[12]);
-        const candleOk = matched[13] === "Y";
-        const marketOk = Number.isFinite(poolChg20Ave) && poolChg20Ave > -0.06;
-
-        const conditions = [
-          { label: "市场过滤", reason: `完整 ETF 池 chg20 算术平均值 ${Number.isFinite(poolChg20Ave) ? poolChg20Ave : "-"} > -0.06。`, passed: marketOk },
-          { label: "前4", reason: "V4Pro 只从最新 score 排名前 4 的 ETF 中选择候选。", passed: rank <= 4 },
-          { label: "K线", reason: "满足 V4Pro 的阴线或影线形态条件。", passed: candleOk },
-          { label: "买入计划", reason: "已进入最新买入计划，或已生成买入价待定的挂单计划。", passed: buyState.selectedCodes.has(code) }
-        ];
-        const filters = [];
-        const pass = buyState.selectedCodes.has(code);
-        const note = pass
-            ? "已进入 V4Pro 最新买入计划。"
-          : buyState.notedCodes.has(code)
-            ? "该 ETF 在买入计划区有备注，通常表示满足了部分条件，但买入价待定或受仓位限制。"
-            : "未进入 V4Pro 最新买入计划。";
-
-        rows.push({
-          rank,
-          name: matched[2],
-          code,
-          score,
-          chg10,
-          chg50,
-          last1,
-          time60,
-          percent,
-          conditions,
-          filters,
-          pass,
-          note
-        });
-      }
-
-      return rows;
-    }
-
-    function parseRecentTrades(sections, latestAccountInfo) {
-      const hitLines = filterMeaningfulLines(sections.hits);
-      const sellLines = filterMeaningfulLines(sections.sells);
-      const pendingLines = filterMeaningfulLines(sections.pendingSells);
-      const sellQueues = new Map();
-      const pendingQueues = new Map();
-
-      function enqueue(map, key, payload) {
-        const queue = map.get(key) || [];
-        queue.push(payload);
-        map.set(key, queue);
-      }
-
-      function dequeue(map, key) {
-        const queue = map.get(key) || [];
-        const next = queue.shift() || null;
-        map.set(key, queue);
-        return next;
-      }
-
-      if (currentStrategy === "v10") {
-        const sellRuleMap = parseRuleMap(sections.sellRules || []);
-        for (const line of sellLines) {
-          const matched = line.match(/^实际卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+信号日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+卖出:([0-9.]+)\s+\|\s+单笔收益:([-\d.]+)%\s+\|\s+计入收益:([-\d.]+)%$/);
-          if (!matched) continue;
-          enqueue(sellQueues, `${matched[3]}|${matched[4]}|${matched[5]}|${matched[6]}`, {
-            sellDate: matched[1],
-            sellPrice: matched[7],
-            profit: `${matched[8]}%`,
-            accountReturn: `${matched[9]}%`
-          });
-        }
-
-        return hitLines.map(line => {
-          const matched = line.match(/^(\d{4}-\d{2}-\d{2})\s+命中\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+排名:(\d+)\s+\|\s+score:([-\d.]+)\s+\|\s+买入日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入价:([0-9.]+)$/);
-          if (!matched) return null;
-          const sellInfo = dequeue(sellQueues, `${matched[3]}|${matched[1]}|${matched[6]}|${matched[7]}`);
-          return {
-            name: matched[2],
-            code: matched[3],
-            buySignal: {
-              label: `排名${matched[4]}`,
-              reason: `V10 四项买入条件通过\n信号日: ${matched[1]}\nscore: ${matched[5]}`
-            },
-            sellState: sellInfo
-              ? { label: "条件1", reason: sellRuleMap["1"] || "V10 日内涨跌幅进入卖出区间" }
-              : { label: "持有中", reason: "该记录尚未产生已结算卖出明细。" },
-            buyDate: matched[6],
-            buyPrice: matched[7],
-            sellDate: sellInfo?.sellDate || "-",
-            sellPrice: sellInfo?.sellPrice || "-",
-            profit: sellInfo?.profit || "-",
-            accountReturn: sellInfo?.accountReturn || "-"
-          };
-        }).filter(Boolean);
-      }
-
-      for (const line of sellLines) {
-        const matched = line.match(/^触发卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+实际卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+卖出:开盘\s+([0-9.]+)\s+\|\s+收益:([-\d.]+)%$/);
-        if (!matched) continue;
-        enqueue(sellQueues, `${matched[4]}|${matched[5]}|${matched[6]}`, {
-          triggerDate: matched[1],
-          sellDate: matched[2],
-          sellPrice: matched[7],
-          profit: `${matched[8]}%`
-        });
-      }
-
-      for (const line of pendingLines) {
-        const matched = line.match(/^触发卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+实际卖出日:(\d{4}-\d{2}-\d{2})\s+开盘待定$/);
-        if (!matched) continue;
-        enqueue(pendingQueues, `${matched[3]}|${matched[4]}|${matched[5]}`, {
-          triggerDate: matched[1],
-          sellDate: matched[6]
-        });
-      }
-
-      return hitLines.map(line => {
-        const matched = line.match(/^(\d{4}-\d{2}-\d{2})\s+命中\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+排名:(\d+)\s+\|\s+score:([-\d.]+)\s+\|\s+买入日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入价:([0-9.]+)$/);
-        if (!matched) return null;
-
-        const key = `${matched[3]}|${matched[6]}|${matched[7]}`;
-        const sellInfo = dequeue(sellQueues, key);
-        const pendingInfo = dequeue(pendingQueues, key);
-
-        let sellState = null;
-        let sellDate = "-";
-        let sellPrice = "-";
-        let profit = "-";
-        let accountReturn = "-";
-
-        if (sellInfo) {
-          sellState = {
-            label: "已卖出",
-            reason: `触发卖出日: ${sellInfo.triggerDate}\n实际卖出日: ${sellInfo.sellDate}`
-          };
-          sellDate = sellInfo.sellDate;
-          sellPrice = sellInfo.sellPrice;
-          profit = sellInfo.profit;
-          accountReturn = formatAccountReturn("v4", parseReturnPercent(sellInfo.profit));
-        } else if (pendingInfo) {
-          sellState = {
-            label: "待卖出",
-            reason: `触发卖出日: ${pendingInfo.triggerDate}\n预计卖出日: ${pendingInfo.sellDate} 开盘`
-          };
-          sellDate = pendingInfo.sellDate;
-        } else {
-          sellState = {
-            label: "持有中",
-            reason: "该记录目前仍在持有或尚未进入待开盘卖出列表。"
-          };
-        }
-
-        return {
-          name: matched[2],
-          code: matched[3],
-          buySignal: {
-            label: `排名${matched[4]}`,
-            reason: `信号日: ${matched[1]}\nscore: ${matched[5]}`
-          },
-          sellState,
-          buyDate: matched[6],
-          buyPrice: matched[7],
-          sellDate,
-          sellPrice,
-          profit,
-          accountReturn
-        };
-      }).filter(Boolean);
-    }
-
-    function buildParsedPayload(payload) {
-      const lines = splitLines(payload.text);
-      const summaryInfo = extractSummary(lines, payload);
-      const sections = parseSections(lines, summaryInfo);
-      const buyPlans = sections.buyPlan || [];
-      const holds = sections.holds || [];
-      const pendingSells = sections.pendingSells || [];
-      const rankRows = parseRankRows(sections);
-      const latestAccountInfo = parseLatestAccountInfo(summaryInfo.summary.latestAccount);
-      const recentTrades = parseRecentTrades(sections, latestAccountInfo);
-      const sizingEntries = extractBuyPlanEntries(buyPlans, sections.ranking || []);
-      const yearlyMonths = parseMonthLines(summaryInfo.summary.yearlyLines);
-
-      return {
-        lines,
-        summaryInfo,
-        sections,
-        buyPlans,
-        holds,
-        pendingSells,
-        rankRows,
-        recentTrades,
-        sizingEntries,
-        yearlyMonths,
-        latestAccountInfo
-      };
     }
 
     function renderRankingTable(rows) {
@@ -2530,11 +3088,95 @@
           <td class="mono">${escapeHtml(formatNumber(row.chg50, 4))}</td>
           <td>${renderConditionList(row.conditions)}</td>
           <td>${renderFlagList(row.filters)}</td>
-          <td>${row.pass
-            ? '<span class="result-chip ok">√</span>'
-            : renderTooltipChip("×", row.note || "买入条件不完整或存在过滤条件", "result-chip bad")}</td>
+          <td>${row.pass ? '<span class="result-chip ok">√</span>' : renderTooltipChip("×", row.note || "买入条件不完整或存在过滤条件", "result-chip bad")}</td>
         </tr>
       `).join("");
+    }
+
+    function currentDataTimestamp() {
+      for (const strategy of ["v10pro", "v10", "v8", "v4"]) {
+        const value = String(strategyPayloadMap[strategy]?.cached_at || "").trim();
+        if (value) {
+          return value.replace("T", " ").slice(0, 19);
+        }
+      }
+      return "-";
+    }
+
+    function buildTodayTrendRows() {
+      const rowsByCode = new Map();
+      let latestTrade = "-";
+
+      // V10Pro 最后写入，因此同一 ETF 优先采用共享行情池中的 V10Pro 数据。
+      for (const strategy of ["v4", "v8", "v10", "v10pro"]) {
+        const payload = strategyPayloadMap[strategy];
+        if (!payload) continue;
+        const parsed = buildParsedPayloadForStrategy(strategy, payload);
+        const strategyDate = extractHeadlineValue(parsed.summaryInfo.summary.latestTrade || "最新交易日: -");
+        if (strategy === "v10pro" || latestTrade === "-") {
+          latestTrade = strategyDate;
+        }
+        for (const row of parsed.rankRows || []) {
+          const open = Number(row.open);
+          const close = Number(row.close);
+          if (!row.code || !Number.isFinite(open) || open <= 0 || !Number.isFinite(close)) continue;
+          rowsByCode.set(row.code, {
+            name: row.name,
+            code: row.code,
+            open,
+            close,
+            trend: (close - open) / open
+          });
+        }
+      }
+
+      return {
+        latestTrade,
+        rows: [...rowsByCode.values()].sort((left, right) => (
+          right.trend - left.trend || left.code.localeCompare(right.code)
+        ))
+      };
+    }
+
+    function renderTodayTrend() {
+      const result = buildTodayTrendRows();
+      todayTrendDialogNoteEl.textContent = `交易日: ${result.latestTrade} | 当前数据时间: ${currentDataTimestamp()} | 按 (close - open) / open 从大到小排列。`;
+      if (!result.rows.length) {
+        todayTrendTableBodyEl.innerHTML = `<tr><td colspan="5">${renderEmptyState("暂无今日走势数据")}</td></tr>`;
+        return;
+      }
+
+      todayTrendTableBodyEl.innerHTML = result.rows.map((row, index) => {
+        const percent = row.trend * 100;
+        const trendClass = percent > 0 ? "trend-up" : percent < 0 ? "trend-down" : "trend-flat";
+        const sign = percent > 0 ? "+" : "";
+        return `
+          <tr>
+            <td class="mono">${index + 1}</td>
+            <td class="name-cell">
+              <div class="name-main">${escapeHtml(row.name)}</div>
+              <div class="name-sub mono">${escapeHtml(row.code)}</div>
+            </td>
+            <td class="mono">${escapeHtml(formatNumber(row.open, 4))}</td>
+            <td class="mono">${escapeHtml(formatNumber(row.close, 4))}</td>
+            <td class="mono ${trendClass}">${sign}${escapeHtml(formatNumber(percent, 4))}%</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function openTodayTrendDialog() {
+      if (!currentParsed) {
+        setStatus("请先获取策略结果", true);
+        return;
+      }
+      renderTodayTrend();
+      openDialog(todayTrendDialog);
+    }
+
+    function openRefreshConfirmDialog() {
+      refreshConfirmDataTimeEl.textContent = currentDataTimestamp();
+      refreshConfirmDialog.showModal();
     }
 
     function renderTradeTable(rows) {
@@ -2549,8 +3191,8 @@
             <div class="name-main">${escapeHtml(row.name)}</div>
             <div class="name-sub mono">${escapeHtml(row.code)}</div>
           </td>
-          <td>${renderTooltipChip(row.buySignal.label, row.buySignal.reason)}</td>
-          <td>${renderTooltipChip(row.sellState.label, row.sellState.reason)}</td>
+          <td>${row.buyCondition && row.buyCondition.label !== "-" ? renderTooltipChip(row.buyCondition.label, row.buyCondition.reason) : '<span class="flag-chip empty">-</span>'}</td>
+          <td>${row.sellCondition ? renderTooltipChip(row.sellCondition.label, row.sellCondition.reason) : '<span class="flag-chip empty">-</span>'}</td>
           <td class="mono">${escapeHtml(row.buyDate || "-")}</td>
           <td class="mono">${escapeHtml(row.buyPrice || "-")}</td>
           <td class="mono">${escapeHtml(row.sellDate || "-")}</td>
@@ -2563,29 +3205,30 @@
 
     function renderProfitCards(parsed) {
       const summary = parsed.summaryInfo.summary;
+      const statsDisplay = resolveStatsDisplay(summary.stats);
       const cards = [
         {
-          label: "近交易日统计",
-          value: summary.stats || "暂无统计",
-          copy: `这里直接展示 ${currentStrategy.toUpperCase()} 原始统计行。`
+          label: "当前策略统计",
+          value: statsDisplay.primary || "暂无统计",
+          copy: "按当前策略自身的交易日窗口统计。"
         },
         {
-          label: "最新一次卖出账户收益",
+          label: "最新一卖出账户收益",
           value: summary.latestAccount || "暂无账户收益",
-          copy: "如果最近一次卖出没有更新到账户收益，这里会显示为暂无。"
+          copy: "如果当前明细里没有更新的卖出账户收益，这里会显示为暂无。"
         },
         {
           label: "年度收益",
           value: summary.yearlyTitle || "暂无年度收益",
-          copy: "下面继续展开每个月的卖出收益分布。"
+          copy: "下面继续展开每个月的收益分布。"
         }
       ];
 
       profitCardsEl.innerHTML = cards.map(item => `
         <article class="profit-card">
-          <div class="tile-copy">${escapeHtml(item.label)}</div>
+          <div class="summary-label">${escapeHtml(item.label)}</div>
           <strong>${escapeHtml(item.value)}</strong>
-          <div class="tile-copy">${escapeHtml(item.copy)}</div>
+          <div class="summary-copy">${escapeHtml(item.copy)}</div>
         </article>
       `).join("");
 
@@ -2594,7 +3237,6 @@
         yearlyGridEl.innerHTML = renderEmptyState("暂无月度收益数据");
         return;
       }
-
       yearlyGridEl.innerHTML = parsed.yearlyMonths.map(item => `
         <div class="month-card">
           <span>${escapeHtml(item.month)}</span>
@@ -2607,7 +3249,7 @@
       const settled = (trades || [])
         .map(trade => ({
           date: String(trade?.sellDate || ""),
-          value: parseReturnPercent(trade?.accountReturn || trade?.profit)
+          value: parsePercentValue(trade?.accountReturn || trade?.profit)
         }))
         .filter(item => /^\d{4}-\d{2}-\d{2}$/.test(item.date) && Number.isFinite(item.value))
         .sort((left, right) => left.date.localeCompare(right.date));
@@ -2680,47 +3322,6 @@
       panelNoteEl.textContent = "点击按钮查看对应对话框。";
     }
 
-    function formatRecentSplitDate(item) {
-      if (!item || !item.has_recent_split || !item.split_date) {
-        return "无";
-      }
-      return String(item.split_date).trim() || "无";
-    }
-
-    async function refreshRecentSplitMap(parsed) {
-      const entries = parsed?.sizingEntries || [];
-      const codes = Array.from(new Set(entries.map(item => item.code).filter(Boolean)));
-      const requestId = ++currentSplitRequestId;
-
-      if (!codes.length || !currentPassword.trim()) {
-        currentSplitMap = {};
-        if (parsed === currentParsed) {
-          renderSizingFromParsed(parsed);
-        }
-        return;
-      }
-
-      try {
-        const payload = await fetchJson(buildApiUrl("/api/fund/splits", {
-          codes: codes.join(","),
-          recent_days: 7
-        }));
-        if (requestId !== currentSplitRequestId) {
-          return;
-        }
-        currentSplitMap = payload.items || {};
-      } catch {
-        if (requestId !== currentSplitRequestId) {
-          return;
-        }
-        currentSplitMap = {};
-      }
-
-      if (parsed === currentParsed) {
-        renderSizingFromParsed(parsed);
-      }
-    }
-
     function renderSizingFromParsed(parsed) {
       if (!parsed) {
         sizingCompoundEl.innerHTML = "";
@@ -2744,17 +3345,19 @@
 
       sizingListEl.innerHTML = parsed.sizingEntries.map(item => {
         const shares = roundToHundreds(amount / item.signalClose);
-        const orderPrice = Number.isFinite(item.orderPrice) ? formatNumber(item.orderPrice, 3) : "-";
+        const metrics = [
+          `<span class="sizing-metric"><span>建议数量</span><strong>${escapeHtml(formatShares(shares))} 份</strong></span>`
+        ];
+        if (item.orderPrice && Number.isFinite(item.orderPrice)) {
+          metrics.push(`<span class="sizing-metric"><span>挂单价</span><strong>${escapeHtml(formatNumber(item.orderPrice, 3))}</strong></span>`);
+        }
+        metrics.push(`<span class="sizing-metric"><span>复利倍数</span><strong>${escapeHtml(compoundMultiplier)}</strong></span>`);
+        metrics.push(`<span class="sizing-metric"><span>最近拆分日期</span><strong>${escapeHtml(formatRecentSplitDate(currentSplitMap[item.code]))}</strong></span>`);
         return `
           <article class="record-card sizing-card">
             <div class="record-head">
               <div class="record-title">${escapeHtml(item.name)} (${escapeHtml(item.code)})</div>
-              <div class="sizing-metrics">
-                <span class="sizing-metric"><span>建议数量</span><strong>${escapeHtml(formatShares(shares))} 份</strong></span>
-                <span class="sizing-metric"><span>挂单价</span><strong>${escapeHtml(orderPrice)}</strong></span>
-                <span class="sizing-metric"><span>复利倍数</span><strong>${escapeHtml(compoundMultiplier)}</strong></span>
-                <span class="sizing-metric"><span>最近拆分日期</span><strong>${escapeHtml(formatRecentSplitDate(currentSplitMap[item.code]))}</strong></span>
-              </div>
+              <div class="sizing-metrics">${metrics.join("")}</div>
             </div>
           </article>
         `;
@@ -2763,31 +3366,44 @@
 
     function renderDialogs(parsed) {
       const summary = parsed.summaryInfo.summary;
-      const buyCount = filterBuyPlanLines(parsed.buyPlans).length;
+      const statsDisplay = resolveStatsDisplay(summary.stats);
+      const buyCount = filterBuyPlanLines(parsed.buyPlans, { skipPrefix: "卖出前持仓数:" }).length;
       const holdCount = countMeaningfulLines(parsed.holds);
-      const pendingCount = countMeaningfulLines(parsed.pendingSells);
+      const sellCount = countMeaningfulLines(parsed.sellPlans);
 
-      operationDialogNoteEl.textContent = `买入计划:${buyCount || "无"}，当前持仓:${holdCount || "无"}，卖出计划:${pendingCount || "无"}`;
-      buyPlanListEl.innerHTML = renderRecordCards(filterBuyPlanLines(parsed.buyPlans), "暂无买入计划");
+      operationDialogNoteEl.textContent = `买入计划:${formatCountLabel(buyCount)}，当前持仓:${formatCountLabel(holdCount)}，卖出计划:${formatCountLabel(sellCount)}`;
+      buyPlanListEl.innerHTML = renderRecordCards(filterBuyPlanLines(parsed.buyPlans, { skipPrefix: "卖出前持仓数:" }), "暂无买入计划", { showSplitRatio: true });
       holdListEl.innerHTML = renderRecordCards(parsed.holds, "暂无当前持仓");
-      sellPlanListEl.innerHTML = renderRecordCards(parsed.pendingSells, "暂无卖出计划");
+      sellPlanListEl.innerHTML = renderRecordCards(buildV10SellPlanDisplayLines(parsed), "暂无卖出计划", { showSplitRatio: true });
       renderSizingFromParsed(parsed);
 
-      rankingDialogNoteEl.textContent = `${extractHeadlineValue(summary.latestTrade || "最新交易日: -")} | ${currentStrategy.toUpperCase()} 最新 score 排行。`;
-      rankingFormulaEl.textContent = summary.scoreFormula || `score公式: ${defaultScoreFormula()}`;
-      rankingHintEl.textContent = currentStrategy === "v10"
-        ? "V10 显示长期涨幅、涨跌幅、chg20、相对强度和空槽入选状态；绿色表示通过，红色表示不通过。"
-        : "V4Pro 使用完整 ETF 池 chg20 算术平均值过滤市场，并结合 score 前4、K线形态、仓位与重复持仓限制。";
+      rankingDialogNoteEl.textContent = `${extractHeadlineValue(summary.latestTrade || "最新交易日: -")} | ${strategyLabel(currentStrategy)} 最新 score 排行。`;
+      rankingFormulaEl.textContent = summary.scoreFormula || `score公式: ${defaultScoreFormula(currentStrategy)}`;
+      const buyRules = parseRuleMap(parsed.sections["买入条件"] || []);
+      rankingBuyRulesEl.innerHTML = Object.entries(buyRules).length
+        ? Object.entries(buyRules).map(([number, rule]) => `<span class="chip">条件${escapeHtml(number)}: ${escapeHtml(rule)}</span>`).join("")
+        : '<span class="chip">暂无买入条件文本</span>';
+      rankingHintEl.textContent = currentStrategy === "v10pro" || currentStrategy === "v10"
+        ? `${strategyLabel(currentStrategy)} 独立显示长期涨幅、percent、chg20、相对强度和空槽入选状态；绿色表示通过，红色表示不通过。`
+        : currentStrategy === "v4"
+          ? "V4Pro 使用完整 ETF 池 chg20 算术平均值过滤市场，并结合 score 前4、K线形态、仓位与重复持仓限制。"
+          : "V8 的买入条件按 step2、step3、step4 显示；过滤条件按最新文本可还原的规则展示。";
       renderRecentReturnChart(parsed.recentTrades);
       renderRankingTable(parsed.rankRows);
 
-      tradeDialogNoteEl.textContent = `${currentStrategy.toUpperCase()} 最近交易明细。未实际卖出的记录，卖出日期、卖出价格、收益、账户收益都会显示为 -。`;
-      tradeHintEl.textContent = currentStrategy === "v10"
-        ? "V10 独立 2 槽，每个槽位按 1/2 仓位计算，成交价为次日开盘待定。"
-        : "这里按命中、已卖出、待开盘卖出三类还原。";
+      tradeDialogNoteEl.textContent = `${strategyLabel(currentStrategy)} 最近交易明细。未结算记录的卖出条件、卖出日期、卖出价格、收益、账户收益都显示为 -。`;
+      tradeHintEl.textContent = currentStrategy === "v10pro"
+        ? "V10Pro 独立1槽全仓，账户收益按每笔原始收益单利累加，不与其他策略合并。"
+        : currentStrategy === "v10"
+          ? "V10 独立2槽，每笔账户收益按1/2槽位权重单利累加，不与其他策略合并。"
+        : currentStrategy === "v4"
+          ? "V4 按命中、已卖出和待开盘卖出记录匹配交易明细。"
+          : "鼠标停留或点击条件标签都可以看具体原因。";
       renderTradeTable(parsed.recentTrades);
 
-      profitDialogNoteEl.textContent = summary.stats || "近交易日统计: -";
+      profitDialogNoteEl.textContent = statsDisplay.secondary
+        ? `${strategyLabel(currentStrategy)} | ${statsDisplay.primary} | 原始 ${strategyLabel(currentStrategy)} 统计: ${statsDisplay.secondary}。`
+        : `${strategyLabel(currentStrategy)} | ${statsDisplay.primary || "近交易日统计: -"}。`;
       renderProfitCards(parsed);
     }
 
@@ -2800,32 +3416,34 @@
         return;
       }
 
-      const buyCount = filterBuyPlanLines(parsed.buyPlans).length;
+      const statsDisplay = resolveStatsDisplay(parsed.summaryInfo.summary.stats);
+      const buyPlanCount = filterBuyPlanLines(parsed.buyPlans, { skipPrefix: "卖出前持仓数:" }).length;
       const holdCount = countMeaningfulLines(parsed.holds);
-      const pendingCount = countMeaningfulLines(parsed.pendingSells);
-      const settledCount = parsed.recentTrades.filter(item => item.sellDate && item.sellDate !== "-" && item.sellPrice && item.sellPrice !== "-").length;
+      const sellCount = countMeaningfulLines(parsed.sellPlans);
+      const settledCount = parsed.recentTrades.filter(item => item.sellDate && item.sellDate !== "-").length;
 
       tileOperationMetaEl.innerHTML = `
-        <span class="meta-pill">买入计划 ${buyCount}</span>
+        <span class="meta-pill">买入计划 ${buyPlanCount}</span>
         <span class="meta-pill">当前持仓 ${holdCount}</span>
-        <span class="meta-pill">待卖出 ${pendingCount}</span>
+        <span class="meta-pill">卖出计划 ${sellCount}</span>
       `;
       tileRankingMetaEl.innerHTML = `
-        <span class="meta-pill">最新排名 ${parsed.rankRows.length} 条</span>
-        <span class="meta-pill">${currentStrategy.toUpperCase()}</span>
+        <span class="meta-pill">最新排行 ${parsed.rankRows.length} 条</span>
+        <span class="meta-pill">${strategyLabel(currentStrategy)}</span>
       `;
       tileTradeMetaEl.innerHTML = `
         <span class="meta-pill">最近命中 ${parsed.recentTrades.length} 条</span>
         <span class="meta-pill">已结算 ${settledCount} 条</span>
       `;
+      const statsMatched = String(statsDisplay.primary || "").match(/^近(\d+)个交易日统计/);
       tileProfitMetaEl.innerHTML = `
-        <span class="meta-pill">${parsed.summaryInfo.summary.stats ? "近交易日统计" : "暂无统计"}</span>
+        <span class="meta-pill">${statsMatched ? `近 ${statsMatched[1]} 个交易日` : "近交易日统计"}</span>
         <span class="meta-pill">${parsed.yearlyMonths.length} 条月度收益</span>
       `;
     }
 
     function setActionButtonsDisabled(disabled) {
-      [openOperationBtn, openRankingBtn, openTradeBtn, openProfitBtn].forEach(button => {
+      [openOperationBtn, openRankingBtn, openTradeBtn, openProfitBtn, btnTodayTrend].forEach(button => {
         button.disabled = disabled;
         button.style.opacity = disabled ? "0.62" : "1";
       });
@@ -2839,15 +3457,17 @@
       heroSummaryEl.innerHTML = `最新交易日: -&nbsp;&nbsp;结果来源: - | <span class="cache-highlight">最后缓存时间: -</span>`;
       panelNoteEl.textContent = message;
       updateActionTiles(null);
+      sizingCompoundEl.innerHTML = "";
       renderSizingFromParsed(null);
       buyPlanListEl.innerHTML = renderEmptyState("暂无买入计划");
       holdListEl.innerHTML = renderEmptyState("暂无当前持仓");
-      sellPlanListEl.innerHTML = renderEmptyState("暂无待开盘卖出持仓");
-      rankingFormulaEl.textContent = "score公式: -";
-      rankingHintEl.textContent = "-";
+      sellPlanListEl.innerHTML = renderEmptyState("暂无卖出计划");
+      rankingFormulaEl.textContent = "Score公式: -";
+      rankingBuyRulesEl.innerHTML = "";
       clearRecentReturnChart();
       rankingTableBodyEl.innerHTML = `<tr><td colspan="8">${renderEmptyState("暂无排行数据")}</td></tr>`;
-      tradeHintEl.textContent = "-";
+      todayTrendDialogNoteEl.textContent = "按 (close - open) / open 从大到小排列。";
+      todayTrendTableBodyEl.innerHTML = `<tr><td colspan="5">${renderEmptyState("暂无今日走势数据")}</td></tr>`;
       tradeTableBodyEl.innerHTML = `<tr><td colspan="9">${renderEmptyState("暂无最近交易数据")}</td></tr>`;
       profitCardsEl.innerHTML = renderEmptyState("暂无收益数据");
       yearlyTitleEl.textContent = "暂无年度收益";
@@ -2889,34 +3509,32 @@
       return `${baseUrl}${path}?${searchParams.toString()}`;
     }
 
-    async function fetchStrategyBundle(forceRefresh = true) {
-      try {
-        const payload = await fetchJson(buildApiUrl("/api/v4/strategies", forceRefresh ? { refresh: "1" } : {}));
-        return saveStrategyBundleCache(payload);
-      } catch (error) {
-        throw normalizeV4RouteError(error);
+    async function fetchStrategyBundle(forceRefresh = false) {
+      const params = { mode: "json" };
+      if (forceRefresh) {
+        params.refresh = "1";
       }
+      const payload = await fetchJson(buildApiUrl("/api/strategies", params));
+      return saveStrategyBundleCache(payload);
     }
 
-    async function verifyV4Access() {
-      try {
-        await fetchJson(buildApiUrl("/api/v4/auth/check"));
-      } catch (error) {
-        throw normalizeV4RouteError(error);
-      }
-    }
-
-    function normalizeV4RouteError(error) {
-      const message = error && error.message ? error.message : "";
-      if (message.includes("HTTP 404")) {
-        return new Error("当前主后端还没部署 V4/V10 双策略接口，请先上传最新 scf_bundle.updated-merged.zip");
-      }
-      return error;
+    async function verifyStrategyAccess() {
+      const payload = await fetchJson(buildApiUrl("/api/auth/check"));
+      applyStrategyScope(Array.isArray(payload.strategies) ? payload.strategies : []);
     }
 
     function isPasswordError(message) {
       const text = String(message || "");
       return text.includes("Unauthorized") || text.includes("password error");
+    }
+
+    function isFrontendCacheMissError(message) {
+      const text = String(message || "");
+      return text.includes("暂无前端缓存")
+        || text.includes("暂无 V10Pro 缓存结果")
+        || text.includes("暂无 V10 缓存结果")
+        || text.includes("暂无 V8 缓存结果")
+        || text.includes("暂无 V4 缓存结果");
     }
 
     function handleStrategyError(error, statusPrefix = "请求失败", preserveCurrent = false) {
@@ -2925,8 +3543,13 @@
         currentPassword = "";
         passwordModalInput.value = "";
         clearStrategyPayloads();
+        applyStrategyScope(DEFAULT_STRATEGIES);
         resetView("口令错误，请重新输入。");
         setAuthLocked(true, "口令错误，请重新输入。");
+      } else if (isFrontendCacheMissError(message)) {
+        if (!preserveCurrent || !currentPayload) {
+          resetView(message);
+        }
       } else {
         window.alert(`${statusPrefix}: ${message}`);
         if (!preserveCurrent || !currentPayload) {
@@ -2934,6 +3557,101 @@
         }
       }
       setStatus(`${statusPrefix}: ${message}`, true);
+    }
+
+    async function renderCurrentStrategyFromBundle() {
+      const payload = currentStrategyPayload();
+      if (!payload) {
+        throw new Error(`暂无 ${strategyLabel(currentStrategy)} 缓存结果，请先获取最新数据`);
+      }
+      setStatus(`完成 | ${strategyLabel(currentStrategy)} | ${resultSource(payload)} | ${payload.cached_at || "-"}`);
+      await renderPayload(payload);
+    }
+
+    async function switchStrategy(strategy) {
+      currentStrategy = strategy;
+      setActiveButton();
+      try {
+        if (!currentPassword.trim()) {
+          throw new Error("请先输入口令");
+        }
+        if (currentStrategies.some(strategy => !strategyPayloadMap[strategy])) {
+          const cached = loadStrategyBundleCache();
+          if (!cached) {
+            throw new Error("暂无前端缓存结果，请点击获取最新数据");
+          }
+        }
+        await renderCurrentStrategyFromBundle();
+      } catch (error) {
+        handleStrategyError(error, "读取失败", true);
+      }
+    }
+
+    async function refreshStrategies() {
+      try {
+        if (DEMO_MODE) {
+          await loadDemoBundle();
+          return;
+        }
+        if (!currentPassword.trim()) {
+          throw new Error("请先输入口令");
+        }
+        setStatus(`获取中: ${scopedStrategyLabels(" / ")}`);
+        setLoading(true, "获取最新数据", `正在获取 ${scopedStrategyLabels(" / ")} 最新结果`);
+        await fetchStrategyBundle(true);
+        await renderCurrentStrategyFromBundle();
+      } catch (error) {
+        handleStrategyError(error, "获取失败", true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    async function loadDemoBundle() {
+      if (!DEMO_MODE) return false;
+      try {
+        setStatus("正在载入本地示例数据");
+        setLoading(true, "载入示例数据", "正在读取最新完整交易日的本地样例");
+        const response = await fetch(DEMO_BUNDLE_URL, { cache: "no-store" });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(payload.message || payload.error || `HTTP ${response.status}`);
+        }
+
+        const normalized = normalizeStrategyResults(payload, ["v10", "v8"]);
+        strategyPayloadMap = {
+          v10pro: normalized.v10pro ? { ...normalized.v10pro, demo_sample: true, front_cached: false } : null,
+          v10: { ...normalized.v10, demo_sample: true, front_cached: false },
+          v8: { ...normalized.v8, demo_sample: true, front_cached: false },
+          v4: null
+        };
+        currentPassword = "demo";
+        applyStrategyScope(ALL_STRATEGIES);
+        capitalInput.value = safeStorageGet(AMOUNT_STORAGE_KEY) || DEMO_AMOUNT;
+        setAuthLocked(false);
+        await renderCurrentStrategyFromBundle();
+        setStatus(`示例模式 | 最新完整交易日 ${extractHeadlineValue(currentParsed?.summaryInfo?.summary?.latestTrade || "最新交易日: -")}`);
+        return true;
+      } catch (error) {
+        const message = error && error.message ? error.message : "示例数据读取失败";
+        resetView(message);
+        setAuthLocked(false);
+        setStatus(`示例模式读取失败: ${message}`, true);
+        return false;
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function confirmAmount() {
+      safeStorageSet(AMOUNT_STORAGE_KEY, capitalInput.value.trim());
+      if (!currentParsed) {
+        setStatus("请先获取策略结果");
+        renderSizingFromParsed(null);
+        return;
+      }
+      setStatus("金额已确认，可在最新操作对话框查看信号购买数量");
+      renderSizingFromParsed(currentParsed);
     }
 
     async function unlockPage() {
@@ -2946,7 +3664,7 @@
       clearStrategyPayloads();
       try {
         setLoading(true, "验证口令", "正在验证访问权限");
-        await verifyV4Access();
+        await verifyStrategyAccess();
         setAuthLocked(false);
         const cached = loadStrategyBundleCache();
         if (cached && currentStrategyPayload()) {
@@ -2960,76 +3678,6 @@
       } finally {
         setLoading(false);
       }
-    }
-
-    async function renderCurrentStrategyFromBundle() {
-      const payload = currentStrategyPayload();
-      if (!payload) {
-        throw new Error(`暂无 ${currentStrategy.toUpperCase()} 前端缓存，请先获取最新数据`);
-      }
-      setStatus(`完成 | ${currentStrategy.toUpperCase()} | ${resultSource(payload)} | ${payload.cached_at || "-"}`);
-      await renderPayload(payload);
-    }
-
-    async function switchStrategy(strategy) {
-      currentStrategy = strategy;
-      setActiveButton();
-      try {
-        if (!currentPassword.trim()) {
-          throw new Error("请先输入口令");
-        }
-        if (!currentStrategyPayload()) {
-          const cached = loadStrategyBundleCache();
-          if (!cached || !currentStrategyPayload()) {
-            throw new Error(`暂无 ${strategy.toUpperCase()} 前端缓存，请先获取最新数据`);
-          }
-        }
-        await renderCurrentStrategyFromBundle();
-      } catch (error) {
-        handleStrategyError(error, "读取失败", true);
-      }
-    }
-
-    async function refreshStrategies() {
-      try {
-        if (!currentPassword.trim()) {
-          throw new Error("请先输入口令");
-        }
-        setStatus("获取中 V4 / V10");
-        setLoading(true, "获取最新数据", "正在获取 V4 / V10 最新结果");
-        await fetchStrategyBundle(true);
-        await renderCurrentStrategyFromBundle();
-      } catch (error) {
-        handleStrategyError(error, "获取失败", true);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    function currentDataTimestamp() {
-      for (const strategy of ["v4", "v10"]) {
-        const value = String(strategyPayloadMap[strategy]?.cached_at || "").trim();
-        if (value) {
-          return value.replace("T", " ").slice(0, 19);
-        }
-      }
-      return "-";
-    }
-
-    function openRefreshConfirmDialog() {
-      refreshConfirmDataTimeEl.textContent = currentDataTimestamp();
-      refreshConfirmDialog.showModal();
-    }
-
-    function confirmAmount() {
-      safeStorageSet(AMOUNT_STORAGE_KEY, capitalInput.value.trim());
-      if (!currentParsed) {
-        setStatus("请先获取策略结果");
-        renderSizingFromParsed(null);
-        return;
-      }
-      setStatus("金额已确认，可在最新操作对话框查看信号购买数量");
-      renderSizingFromParsed(currentParsed);
     }
 
     function openDialog(dialog) {
@@ -3064,26 +3712,37 @@
       });
     }
 
+    capitalInput.value = safeStorageGet(AMOUNT_STORAGE_KEY) || (DEMO_MODE ? DEMO_AMOUNT : "");
+    restoreAllOperationAmounts();
+
     document.querySelectorAll("[data-close-dialog]").forEach(button => {
       button.addEventListener("click", event => {
         closeDialogById(event.currentTarget.getAttribute("data-close-dialog"));
       });
     });
 
-    [operationDialog, allOperationsDialog, rankingDialog, tradeDialog, profitDialog, refreshConfirmDialog].forEach(bindDialogBehavior);
+    [operationDialog, allOperationsDialog, todayTrendDialog, rankingDialog, tradeDialog, profitDialog, refreshConfirmDialog].forEach(bindDialogBehavior);
 
     function handleTooltipEnter(event) {
       const trigger = closestTooltipTrigger(event.target);
-      if (!trigger) return;
-      if (activeTooltipPinned && activeTooltipTrigger !== trigger) return;
+      if (!trigger) {
+        return;
+      }
+      if (activeTooltipPinned && activeTooltipTrigger !== trigger) {
+        return;
+      }
       showTooltip(trigger);
     }
 
     function handleTooltipLeave(event) {
       const trigger = closestTooltipTrigger(event.target);
-      if (!trigger || activeTooltipPinned) return;
+      if (!trigger || activeTooltipPinned) {
+        return;
+      }
       const nextTarget = event.relatedTarget;
-      if (nextTarget && trigger.contains(nextTarget)) return;
+      if (nextTarget && trigger.contains(nextTarget)) {
+        return;
+      }
       hideTooltip(true);
     }
 
@@ -3099,7 +3758,7 @@
       }
     });
 
-    document.addEventListener("focusout", () => {
+    document.addEventListener("focusout", event => {
       if (!activeTooltipPinned) {
         hideTooltip(true);
       }
@@ -3141,8 +3800,6 @@
       hideTooltip(true);
     }, true);
 
-    capitalInput.value = safeStorageGet(AMOUNT_STORAGE_KEY) || "";
-    restoreAllOperationAmounts();
     passwordSubmitBtn.addEventListener("click", () => { void unlockPage(); });
     passwordModalInput.addEventListener("keydown", event => {
       if (event.key === "Enter") {
@@ -3155,26 +3812,30 @@
         confirmAmount();
       }
     });
-    btnV4.addEventListener("click", () => { void switchStrategy("v4"); });
+    allOperationsConfirmBtn.addEventListener("click", renderAllOperations);
+    [allV4AmountInput, allV8AmountInput, allV10ProAmountInput, allV10AmountInput].forEach(input => {
+      input.addEventListener("input", () => {
+        saveAllOperationAmounts();
+        updateAllOperationTotals();
+      });
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          renderAllOperations();
+        }
+      });
+    });
+
+    btnV10Pro.addEventListener("click", () => { void switchStrategy("v10pro"); });
     btnV10.addEventListener("click", () => { void switchStrategy("v10"); });
+    btnV8.addEventListener("click", () => { void switchStrategy("v8"); });
+    btnV4.addEventListener("click", () => { void switchStrategy("v4"); });
+    btnTodayTrend.addEventListener("click", openTodayTrendDialog);
     openAllOperationsBtn.addEventListener("click", openAllOperations);
     btnRefresh.addEventListener("click", openRefreshConfirmDialog);
     refreshConfirmCancelBtn.addEventListener("click", () => { refreshConfirmDialog.close(); });
     refreshConfirmSubmitBtn.addEventListener("click", () => {
       refreshConfirmDialog.close();
       void refreshStrategies();
-    });
-    [allV4AmountInput, allV10AmountInput].forEach(input => {
-      input.addEventListener("input", updateAllOperationTotals);
-      input.addEventListener("keydown", event => {
-        if (event.key === "Enter") allOperationsConfirmBtn.click();
-      });
-    });
-    allOperationsConfirmBtn.addEventListener("click", () => {
-      saveAllOperationAmounts();
-      updateAllOperationTotals();
-      renderAllOperations();
-      void refreshAllOperationSignalCloses();
     });
 
     openOperationBtn.addEventListener("click", () => { openDialog(operationDialog); });
@@ -3185,10 +3846,16 @@
     });
     openProfitBtn.addEventListener("click", () => { openDialog(profitDialog); });
 
-    setActiveButton();
-    resetView("点击按钮前请先输入口令并读取缓存或刷新数据。");
-    setStatus("请输入口令后读取前端缓存");
-    setAuthLocked(true);
+    applyStrategyScope(DEFAULT_STRATEGIES);
+    if (DEMO_MODE) {
+      resetView("正在载入本地示例数据");
+      setAuthLocked(false);
+      void loadDemoBundle();
+    } else {
+      resetView("点击按钮前请先输入口令并读取缓存或刷新数据。");
+      setStatus("请输入口令后读取前端缓存");
+      setAuthLocked(true);
+    }
   </script>
 </body>
 </html>
