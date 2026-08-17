@@ -1740,7 +1740,7 @@
       if (!payload) return "-";
       if (payload.demo_sample) return "本地示例";
       if (payload.front_cached) return "前端缓存";
-      if (payload.cached) return "后端文件缓存";
+      if (payload.cached) return "后端缓存";
       if (payload.refreshed) return "最新数据";
       return "策略结果";
     }
@@ -3278,7 +3278,7 @@
       if (!window.echarts) {
         tradeReturnChartEl.innerHTML = renderEmptyState("正在加载图表组件...");
         void ensureEchartsLoaded().then(() => renderRecentReturnChart(trades)).catch(() => {
-          tradeReturnChartEl.innerHTML = renderEmptyState("图表组件加载失败，请确认 echarts.min.js 已与 index.html 一同部署。");
+          tradeReturnChartEl.innerHTML = renderEmptyState("图表组件加载失败，请检查网络后刷新重试。");
         });
         return;
       }
@@ -3300,12 +3300,25 @@
     function ensureEchartsLoaded() {
       if (window.echarts) return Promise.resolve(window.echarts);
       if (echartsLoadPromise) return echartsLoadPromise;
+      const sources = [
+        new URL("./echarts.min.js", window.location.href).href,
+        "https://registry.npmmirror.com/echarts/5.6.0/files/dist/echarts.min.js",
+        "https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"
+      ];
       echartsLoadPromise = new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = new URL("./echarts.min.js", window.location.href).href;
-        script.onload = () => window.echarts ? resolve(window.echarts) : reject(new Error("ECharts did not initialize"));
-        script.onerror = () => reject(new Error("ECharts failed to load"));
-        document.head.appendChild(script);
+        let sourceIndex = 0;
+        const tryNextSource = () => {
+          if (sourceIndex >= sources.length) {
+            reject(new Error("ECharts failed to load from all sources"));
+            return;
+          }
+          const script = document.createElement("script");
+          script.src = sources[sourceIndex++];
+          script.onload = () => window.echarts ? resolve(window.echarts) : tryNextSource();
+          script.onerror = tryNextSource;
+          document.head.appendChild(script);
+        };
+        tryNextSource();
       });
       return echartsLoadPromise;
     }
@@ -3515,7 +3528,8 @@
         params.refresh = "1";
       }
       const payload = await fetchJson(buildApiUrl("/api/strategies", params));
-      return saveStrategyBundleCache(payload);
+      saveStrategyBundleCache(payload);
+      return payload;
     }
 
     async function verifyStrategyAccess() {
@@ -3598,8 +3612,12 @@
         }
         setStatus(`获取中: ${scopedStrategyLabels(" / ")}`);
         setLoading(true, "获取最新数据", `正在获取 ${scopedStrategyLabels(" / ")} 最新结果`);
-        await fetchStrategyBundle(true);
+        const payload = await fetchStrategyBundle(true);
         await renderCurrentStrategyFromBundle();
+        if (payload && payload.cooldown) {
+          const waitSeconds = payload.cooldown_retry_after || 0;
+          setStatus(`后端数据冷却中，约 ${waitSeconds} 秒后可重新计算；已返回 ${payload.cached_at || "-"} 的后端缓存`);
+        }
       } catch (error) {
         handleStrategyError(error, "获取失败", true);
       } finally {
