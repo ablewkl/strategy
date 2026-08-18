@@ -2616,7 +2616,7 @@
     function parseV10SignalDetailMap(lines, buyRuleMap, filterRuleMap) {
       const map = new Map();
       for (const line of lines || []) {
-        const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+variant:(V10Pro|V10)\s+score:([-\d.]+)\s+percent:([-\d.]+)\s+\|\s+long条件:([YN])\s+percent条件:([YN])\s+mid条件:([YN])\s+相对强度:([YN])\s+入选:([YN])\s+\|\s+(通过|不通过)$/);
+        const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+variant:(V10Pro|V10)\s+score:([-\d.]+)\s+percent:([-\d.]+)\s+\|\s+long条件:([YN])\s+percent条件:([YN])\s+mid条件:([YN])(?:\s+量比:([YN]))?\s+相对强度:([YN])\s+入选:([YN])\s+\|\s+(通过|不通过)$/);
         if (!matched) continue;
 
         const code = matched[3];
@@ -2624,17 +2624,22 @@
         const conditions = [
           { label: `${variant}长期`, reason: buyRuleMap["1"] || "长期涨幅进入买入区间", passed: matched[7] === "Y" },
           { label: "涨跌幅", reason: buyRuleMap["2"] || "当日涨跌幅进入买入区间", passed: matched[8] === "Y" },
-          { label: "chg20", reason: buyRuleMap["3"] || "chg20进入买入区间", passed: matched[9] === "Y" },
-          { label: "相对强度", reason: buyRuleMap["4"] || "相对强度高于ETF池中位数-0.01", passed: matched[10] === "Y" },
-          { label: "空槽入选", reason: buyRuleMap["5"] || "次日按score填补空槽", passed: matched[11] === "Y" }
+          { label: "chg20", reason: buyRuleMap["3"] || "chg20进入买入区间", passed: matched[9] === "Y" }
         ];
+        if (matched[10] !== undefined) {
+          conditions.push({ label: "量比", reason: buyRuleMap["4"] || "信号日成交量高于前3日平均量×0.7", passed: matched[10] === "Y" });
+        }
+        conditions.push(
+          { label: "相对强度", reason: buyRuleMap[String(conditions.length + 1)] || "相对强度高于ETF池中位数加阈值", passed: matched[11] === "Y" },
+          { label: "空槽入选", reason: buyRuleMap[String(conditions.length + 2)] || "次日按score填补空槽", passed: matched[12] === "Y" }
+        );
 
         map.set(`${variant}|${code}`, {
           variant,
           percent: Number(matched[6]),
           conditions,
-          filters: matched[12] === "通过" ? [] : [{ label: "未通过", reason: filterRuleMap["1"] || `至少一个${variant}买入条件未通过` }],
-          pass: matched[12] === "通过"
+          filters: matched[13] === "通过" ? [] : [{ label: "未通过", reason: filterRuleMap["1"] || `至少一个${variant}买入条件未通过` }],
+          pass: matched[13] === "通过"
         });
       }
       return map;
@@ -2917,7 +2922,7 @@
             code: matched[4],
             buyCondition: {
               label: `${variant} 排名${matched[5]}`,
-              reason: `${variant}四项买入条件通过\n信号日: ${matched[1]}\nscore: ${matched[6]}`
+              reason: `${variant}买入条件全部通过\n信号日: ${matched[1]}\nscore: ${matched[6]}`
             },
             sellCondition: sellInfo?.sellCondition || null,
             buyDate: matched[7],
