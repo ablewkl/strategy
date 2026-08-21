@@ -2616,7 +2616,7 @@
     function parseV10SignalDetailMap(lines, buyRuleMap, filterRuleMap) {
       const map = new Map();
       for (const line of lines || []) {
-        const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+variant:(V10Pro|V10)\s+score:([-\d.]+)\s+percent:([-\d.]+)\s+\|\s+long条件:([YN])\s+percent条件:([YN])\s+mid条件:([YN])(?:\s+量比:([YN]))?\s+相对强度:([YN])\s+入选:([YN])\s+\|\s+(通过|不通过)$/);
+        const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+variant:(V10Pro|V10)\s+score:([-\d.]+)\s+percent:([-\d.]+)\s+\|\s+long条件:([YN])\s+percent条件:([YN])\s+mid条件:([YN])(?:\s+量比:([YN]))?\s+相对强度:([YN])(?:\s+短期强度:([YN]))?\s+入选:([YN])\s+\|\s+(通过|不通过)$/);
         if (!matched) continue;
 
         const code = matched[3];
@@ -2629,17 +2629,18 @@
         if (matched[10] !== undefined) {
           conditions.push({ label: "量比", reason: buyRuleMap["4"] || "信号日成交量高于前3日平均量×0.7", passed: matched[10] === "Y" });
         }
-        conditions.push(
-          { label: "相对强度", reason: buyRuleMap[String(conditions.length + 1)] || "相对强度高于ETF池中位数加阈值", passed: matched[11] === "Y" },
-          { label: "空槽入选", reason: buyRuleMap[String(conditions.length + 2)] || "次日按score填补空槽", passed: matched[12] === "Y" }
-        );
+        conditions.push({ label: "相对强度", reason: buyRuleMap[String(conditions.length + 1)] || "相对强度高于ETF池中位数加阈值", passed: matched[11] === "Y" });
+        if (matched[12] !== undefined) {
+          conditions.push({ label: "短期强度", reason: buyRuleMap[String(conditions.length + 1)] || "短期相对强度高于ETF池中位数加阈值", passed: matched[12] === "Y" });
+        }
+        conditions.push({ label: "空槽入选", reason: buyRuleMap[String(conditions.length + 1)] || "次日按score填补空槽", passed: matched[13] === "Y" });
 
         map.set(`${variant}|${code}`, {
           variant,
           percent: Number(matched[6]),
           conditions,
-          filters: matched[13] === "通过" ? [] : [{ label: "未通过", reason: filterRuleMap["1"] || `至少一个${variant}买入条件未通过` }],
-          pass: matched[13] === "通过"
+          filters: matched[14] === "通过" ? [] : [{ label: "未通过", reason: filterRuleMap["1"] || `至少一个${variant}买入条件未通过` }],
+          pass: matched[14] === "通过"
         });
       }
       return map;
@@ -3402,7 +3403,7 @@
         ? Object.entries(buyRules).map(([number, rule]) => `<span class="chip">条件${escapeHtml(number)}: ${escapeHtml(rule)}</span>`).join("")
         : '<span class="chip">暂无买入条件文本</span>';
       rankingHintEl.textContent = currentStrategy === "v10pro" || currentStrategy === "v10"
-        ? `${strategyLabel(currentStrategy)} 独立显示长期涨幅、percent、chg20、相对强度和空槽入选状态；绿色表示通过，红色表示不通过。`
+        ? `${strategyLabel(currentStrategy)} 独立显示长期涨幅、percent、chg20、相对强度${currentStrategy === "v10" ? "、量比" : "、短期强度"}和空槽入选状态；绿色表示通过，红色表示不通过。`
         : currentStrategy === "v4"
           ? "V4Pro 使用完整 ETF 池 chg20 算术平均值过滤市场，并结合 score 前4、K线形态、仓位与重复持仓限制。"
           : "V8 的买入条件按 step2、step3、step4 显示；过滤条件按最新文本可还原的规则展示。";
