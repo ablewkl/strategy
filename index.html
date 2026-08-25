@@ -2351,7 +2351,10 @@
     }
 
     function isBuyPlanEtfLine(line) {
-      return /^(.+?)\((S[HZ]\d+)\)/.test(String(line || ""));
+      const text = String(line || "");
+      return /^(.+?)\((S[HZ]\d+)\)/.test(text)
+        && text.includes("| 排名:")
+        && (text.includes("| 挂单价:") || text.includes("| 买入价:") || text.includes("| 策略成交价:"));
     }
 
     function filterBuyPlanLines(lines, options = {}) {
