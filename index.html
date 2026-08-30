@@ -2244,7 +2244,7 @@
         return "0.75*chg50+0.1*chg30-percent_decimal*(-1.75)";
       }
       if (strategy === "v12") {
-        return "常态: chg30*1.0+chg10*(-0.625)+last1*3.5；深跌(percent<-1.25): chg30*0.25+chg40*0.125+last1*(-1.0)";
+        return "常态: chg30*1.0 + chg10*(-0.75) + last1*4.3 + chg60*0.125；深跌(percent<-1.25): chg30*0.22 + chg40*0.28 + last1*(-1.0) + chg60*(-0.125)";
       }
       return "0.5*chg50+0.1*chg30-percent_decimal*(-0.5)";
     }
@@ -2254,6 +2254,7 @@
         title: lines[0] || "",
         latestTrade: "",
         scoreFormula: "",
+        scoreFormulaLines: [],
         stats: "",
         latestAccount: "",
         yearlyTitle: "",
@@ -2266,8 +2267,9 @@
           summary.latestTrade = line;
           continue;
         }
-        if (!summary.scoreFormula && line.startsWith("score公式:")) {
-          summary.scoreFormula = line;
+        if (/^score公式/.test(line)) {
+          if (!summary.scoreFormula) summary.scoreFormula = line;
+          summary.scoreFormulaLines.push(line);
           continue;
         }
         if (!summary.stats && /^近\d+个交易日统计:/.test(line)) {
@@ -2301,7 +2303,9 @@
         summary,
         resultLines: [
           summary.latestTrade || "最新交易日: -",
-          summary.scoreFormula || `score公式: ${defaultScoreFormula(payload.strategy)}`,
+          ...(summary.scoreFormulaLines.length
+            ? summary.scoreFormulaLines
+            : [`score公式: ${defaultScoreFormula(payload.strategy)}`]),
           `最后缓存时间: ${payload.cached_at || "-"}`,
           `结果来源: ${resultSource(payload)}`,
           ...(summary.stats ? [summary.stats] : []),
@@ -3496,7 +3500,10 @@
       renderSizingFromParsed(parsed);
 
       rankingDialogNoteEl.textContent = `${extractHeadlineValue(summary.latestTrade || "最新交易日: -")} | ${strategyLabel(currentStrategy)} 最新 score 排行。`;
-      rankingFormulaEl.textContent = summary.scoreFormula || `score公式: ${defaultScoreFormula(currentStrategy)}`;
+      const formulaLines = summary.scoreFormulaLines.length
+        ? summary.scoreFormulaLines
+        : [`score公式: ${defaultScoreFormula(currentStrategy)}`];
+      rankingFormulaEl.innerHTML = formulaLines.map(escapeHtml).join("<br>");
       const buyRules = parseRuleMap(parsed.sections["买入条件"] || []);
       rankingBuyRulesEl.innerHTML = Object.entries(buyRules).length
         ? Object.entries(buyRules).map(([number, rule]) => `<span class="chip">条件${escapeHtml(number)}: ${escapeHtml(rule)}</span>`).join("")
