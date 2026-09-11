@@ -1088,6 +1088,7 @@
          <button id="btnV10Pro" type="button">V10Pro</button>
          <button id="btnV10" type="button">V10</button>
          <button id="btnV12" type="button">V12</button>
+         <button id="btnV14" type="button">V14</button>
          <button id="btnTodayTrend" type="button">今日走势</button>
          <button id="openAllOperationsBtn" type="button">全部操作</button>
           <button id="btnRefresh" class="warn" type="button">获取最新数据</button>
@@ -1271,6 +1272,10 @@
             <div class="all-operation-field" id="allV12Field">
               <label for="allV12Amount">V12 金额 <span id="allV12Total" class="all-operation-total">(总金额:0)</span></label>
               <input id="allV12Amount" class="capital" type="text" inputmode="decimal" placeholder="例如 20000" />
+            </div>
+            <div class="all-operation-field" id="allV14Field">
+              <label for="allV14Amount">V14 金额 <span id="allV14Total" class="all-operation-total">(总金额:0)</span></label>
+              <input id="allV14Amount" class="capital" type="text" inputmode="decimal" placeholder="例如 20000" />
             </div>
           </div>
           <div class="capital-row">
@@ -1477,6 +1482,7 @@
     const btnV8 = document.getElementById("btnV8");
     const btnV4 = document.getElementById("btnV4");
     const btnV12 = document.getElementById("btnV12");
+    const btnV14 = document.getElementById("btnV14");
     const btnTodayTrend = document.getElementById("btnTodayTrend");
     const openAllOperationsBtn = document.getElementById("openAllOperationsBtn");
     const btnRefresh = document.getElementById("btnRefresh");
@@ -1514,11 +1520,13 @@
     const allV10AmountInput = document.getElementById("allV10Amount");
     const allV8AmountInput = document.getElementById("allV8Amount");
     const allV12AmountInput = document.getElementById("allV12Amount");
+    const allV14AmountInput = document.getElementById("allV14Amount");
     const allV4TotalEl = document.getElementById("allV4Total");
     const allV8TotalEl = document.getElementById("allV8Total");
     const allV10ProTotalEl = document.getElementById("allV10ProTotal");
     const allV10TotalEl = document.getElementById("allV10Total");
     const allV12TotalEl = document.getElementById("allV12Total");
+    const allV14TotalEl = document.getElementById("allV14Total");
     const allOperationsConfirmBtn = document.getElementById("allOperationsConfirmBtn");
     const allOperationsSummaryEl = document.getElementById("allOperationsSummary");
     const allStrategyCompoundMultipliersEl = document.getElementById("allStrategyCompoundMultipliers");
@@ -1538,6 +1546,7 @@
     const allV10ProField = document.getElementById("allV10ProField");
     const allV10Field = document.getElementById("allV10Field");
     const allV12Field = document.getElementById("allV12Field");
+    const allV14Field = document.getElementById("allV14Field");
 
     const rankingDialogNoteEl = document.getElementById("rankingDialogNote");
     const rankingFormulaEl = document.getElementById("rankingFormula");
@@ -1571,10 +1580,11 @@
       v8: "40000",
       v10pro: "30000",
       v10: "20000",
-      v12: "20000"
+      v12: "20000",
+      v14: "20000"
     };
     const STRATEGY_BUNDLE_STORAGE_KEY = "etf_strategy_bundle_v10_v8_v4pro_20260816";
-    const ALL_STRATEGIES = ["v4", "v8", "v10pro", "v10", "v12"];
+    const ALL_STRATEGIES = ["v4", "v8", "v10pro", "v10", "v12", "v14"];
     const DEFAULT_STRATEGIES = ["v4", "v10"];
     const ORDER_PRICE_MULTIPLIER = 1.04;
     const DEMO_BUNDLE_URL = pageParams.get("demoBundle") || (pageParams.get("demo") === "1" ? "./demo/etf_strategy_bundle_latest.json" : "");
@@ -1590,6 +1600,7 @@
       "最新V8买入计划:": "买入计划",
       "最新V4买入计划:": "买入计划",
       "最新V12买入计划:": "买入计划",
+      "最新V14买入计划:": "买入计划",
       "最新交易日score排行:": "最新交易日score排行",
       "新增信号详情:": "新增信号详情",
       "新增信号详细:": "新增信号详情",
@@ -1623,7 +1634,7 @@
     let currentPassword = "";
     let currentPayload = null;
     let currentParsed = null;
-    let strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null, v12: null };
+    let strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null, v12: null, v14: null };
     let currentSplitMap = {};
     let currentSplitRequestId = 0;
     let allOperationSplitRequestId = 0;
@@ -1675,6 +1686,7 @@
       btnV8.classList.toggle("active", currentStrategy === "v8");
       btnV4.classList.toggle("active", currentStrategy === "v4");
       btnV12.classList.toggle("active", currentStrategy === "v12");
+      btnV14.classList.toggle("active", currentStrategy === "v14");
     }
 
     function strategyLabel(strategy) {
@@ -1700,6 +1712,9 @@
       if (currentStrategies.includes("v12")) {
         parts.push("V12 为独立1槽全仓");
       }
+      if (currentStrategies.includes("v14")) {
+        parts.push("V14 为独立1槽全仓");
+      }
       allOperationsSlotNoteEl.textContent = `${parts.join("；")}。输入金额直接用于每条对应策略计划的份额计算，不再按仓位比例换算。`;
     }
 
@@ -1715,7 +1730,8 @@
       btnV8.hidden = !scopeHas("v8");
       btnV4.hidden = !scopeHas("v4");
       btnV12.hidden = !scopeHas("v12");
-      const fieldByStrategy = { v4: allV4Field, v8: allV8Field, v10pro: allV10ProField, v10: allV10Field, v12: allV12Field };
+      btnV14.hidden = !scopeHas("v14");
+      const fieldByStrategy = { v4: allV4Field, v8: allV8Field, v10pro: allV10ProField, v10: allV10Field, v12: allV12Field, v14: allV14Field };
       Object.entries(fieldByStrategy).forEach(([strategy, field]) => {
         field.hidden = !scopeHas(strategy);
       });
@@ -1844,6 +1860,12 @@
           && text.includes("当前待结算持仓")
           && text.includes("卖出计划");
       }
+      if (strategy === "v14") {
+        return text.includes("最新交易日score排行")
+          && text.includes("最新V14买入计划")
+          && text.includes("当前待结算持仓")
+          && text.includes("卖出计划");
+      }
       if (!text.includes("最新交易日score排行")) return false;
       if (!text.includes("卖出计划")) return false;
       if (strategy === "v10pro" && !text.includes("最新V10Pro挂单计划")) return false;
@@ -1861,7 +1883,7 @@
       const required = Array.isArray(requiredStrategies) && requiredStrategies.length
         ? requiredStrategies
         : DEFAULT_STRATEGIES;
-      const nextMap = { v10pro: null, v10: null, v8: null, v4: null, v12: null };
+      const nextMap = { v10pro: null, v10: null, v8: null, v4: null, v12: null, v14: null };
       for (const strategy of required) {
         const result = results[strategy];
         if (!isPayloadStructurallyValid(strategy, result)) {
@@ -1886,7 +1908,8 @@
         v10: normalized.v10 ? { ...normalized.v10, front_cached: false } : null,
         v8: normalized.v8 ? { ...normalized.v8, front_cached: false } : null,
         v4: normalized.v4 ? { ...normalized.v4, front_cached: false } : null,
-        v12: normalized.v12 ? { ...normalized.v12, front_cached: false } : null
+        v12: normalized.v12 ? { ...normalized.v12, front_cached: false } : null,
+        v14: normalized.v14 ? { ...normalized.v14, front_cached: false } : null
       };
       return strategyPayloadMap;
     }
@@ -1902,12 +1925,13 @@
         v10: normalized.v10 ? { ...normalized.v10, front_cached: true } : null,
         v8: normalized.v8 ? { ...normalized.v8, front_cached: true } : null,
         v4: normalized.v4 ? { ...normalized.v4, front_cached: true } : null,
-        v12: normalized.v12 ? { ...normalized.v12, front_cached: true } : null
+        v12: normalized.v12 ? { ...normalized.v12, front_cached: true } : null,
+        v14: normalized.v14 ? { ...normalized.v14, front_cached: true } : null
         };
         return strategyPayloadMap;
       } catch {
         safeStorageRemove(STRATEGY_BUNDLE_STORAGE_KEY);
-        strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null, v12: null };
+        strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null, v12: null, v14: null };
         return null;
       }
     }
@@ -1917,7 +1941,7 @@
     }
 
     function clearStrategyPayloads() {
-      strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null, v12: null };
+      strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null, v12: null, v14: null };
       currentSplitMap = {};
       allOperationSignalCloseMap = {};
       currentSplitRequestId += 1;
@@ -1944,7 +1968,8 @@
         v10pro: parseLooseNumber(allV10ProAmountInput.value),
         v10: parseLooseNumber(allV10AmountInput.value),
         v8: parseLooseNumber(allV8AmountInput.value),
-        v12: parseLooseNumber(allV12AmountInput.value)
+        v12: parseLooseNumber(allV12AmountInput.value),
+        v14: parseLooseNumber(allV14AmountInput.value)
       };
     }
 
@@ -1953,7 +1978,8 @@
       v8: 4,
       v10pro: 1,
       v10: 2,
-      v12: 1
+      v12: 1,
+      v14: 1
     };
 
     function formatTotalAmount(value) {
@@ -1968,7 +1994,8 @@
         v8: allV8TotalEl,
         v10pro: allV10ProTotalEl,
         v10: allV10TotalEl,
-        v12: allV12TotalEl
+        v12: allV12TotalEl,
+        v14: allV14TotalEl
       };
       Object.entries(totalElements).forEach(([strategy, element]) => {
         const amount = amounts[strategy];
@@ -1985,7 +2012,8 @@
         v10pro: allV10ProAmountInput.value.trim(),
         v10: allV10AmountInput.value.trim(),
         v8: allV8AmountInput.value.trim(),
-        v12: allV12AmountInput.value.trim()
+        v12: allV12AmountInput.value.trim(),
+        v14: allV14AmountInput.value.trim()
       }));
     }
 
@@ -2002,6 +2030,7 @@
           : ALL_OPERATION_DEFAULT_AMOUNTS.v10;
         allV8AmountInput.value = typeof saved.v8 === "string" ? saved.v8 : ALL_OPERATION_DEFAULT_AMOUNTS.v8;
         allV12AmountInput.value = typeof saved.v12 === "string" ? saved.v12 : ALL_OPERATION_DEFAULT_AMOUNTS.v12;
+        allV14AmountInput.value = typeof saved.v14 === "string" ? saved.v14 : ALL_OPERATION_DEFAULT_AMOUNTS.v14;
       } catch {
         // Ignore malformed local data and leave all operation amounts blank.
       } finally {
@@ -2245,6 +2274,9 @@
       }
       if (strategy === "v12") {
         return "常态: chg30*1.0 + chg10*(-0.75) + last1*4.3 + chg60*0.125；深跌(percent<-1.25): chg30*0.22 + chg40*0.28 + last1*(-1.0) + chg60*(-0.125)";
+      }
+      if (strategy === "v14") {
+        return "满足条件数(0~3)，条件k=范围1或范围2(开区间)；深跌(percent<-0.9)时仅深跌票参与排名";
       }
       return "0.5*chg50+0.1*chg30-percent_decimal*(-0.5)";
     }
@@ -2710,7 +2742,7 @@
       for (const line of rankLines) {
         if (!/^\d+\./.test(line)) continue;
 
-        if (strategy === "v12") {
+        if (strategy === "v12" || strategy === "v14") {
           const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+score:([-\d.]+)\s+chg10:([-\d.]+)\s+chg20:([-\d.]+)\s+chg30:([-\d.]+)\s+chg40:([-\d.]+)\s+chg50:([-\d.]+)\s+chg60:([-\d.]+)\s+last1:([-\d.]+)\s+open:([-\d.]+)\s+close:([-\d.]+)\s+percent:([-\d.]+)$/);
           if (!matched) continue;
 
@@ -2728,7 +2760,7 @@
               : [],
             filters: [],
             pass: rank === 1,
-            note: rank === 1 ? "" : "非当日第一，V12 只持有第一名",
+            note: rank === 1 ? "" : `非当日第一，${strategyLabel(strategy)} 只持有第一名`,
             open: Number(matched[12]),
             close: Number(matched[13]),
             percent: Number(matched[14])
@@ -2894,15 +2926,16 @@
         return next;
       }
 
-      if (strategy === "v12") {
+      if (strategy === "v12" || strategy === "v14") {
+        const tag = strategyLabel(strategy);
         for (const line of sellLines) {
-          const matched = line.match(/^实际卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+\[V12\](.+?)\((S[HZ]\d+)\)\s+\|\s+信号日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+卖出:([0-9.]+)\s+\|\s+单笔收益:([-\d.]+)%\s+\|\s+计入收益:([-\d.]+)%$/);
+          const matched = line.match(/^实际卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+\[V(12|14)\](.+?)\((S[HZ]\d+)\)\s+\|\s+信号日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+卖出:([0-9.]+)\s+\|\s+单笔收益:([-\d.]+)%\s+\|\s+计入收益:([-\d.]+)%$/);
           if (!matched) continue;
-          enqueueSell(`${matched[3]}|${matched[4]}|${matched[5]}|${matched[6]}`, {
+          enqueueSell(`${matched[4]}|${matched[5]}|${matched[6]}|${matched[7]}`, {
             sellDate: matched[1],
-            sellPrice: matched[7],
-            profit: `${matched[8]}%`,
-            accountReturn: `${matched[9]}%`,
+            sellPrice: matched[8],
+            profit: `${matched[9]}%`,
+            accountReturn: `${matched[10]}%`,
             sellCondition: {
               label: "换仓",
               reason: sellRuleMap["1"] || "持仓不再是全池第一，次日开盘卖出"
@@ -2911,19 +2944,19 @@
         }
 
         return hitLines.map(line => {
-          const matched = line.match(/^(\d{4}-\d{2}-\d{2})\s+命中\s+\[V12\](.+?)\((S[HZ]\d+)\)\s+\|\s+排名:(\d+)\s+\|\s+买入日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入价:([0-9.]+)$/);
+          const matched = line.match(/^(\d{4}-\d{2}-\d{2})\s+命中\s+\[V(12|14)\](.+?)\((S[HZ]\d+)\)\s+\|\s+排名:(\d+)\s+\|\s+买入日:(\d{4}-\d{2}-\d{2})\s+\|\s+买入价:([0-9.]+)$/);
           if (!matched) return null;
-          const sellInfo = dequeueSell(`${matched[3]}|${matched[1]}|${matched[5]}|${matched[6]}`);
+          const sellInfo = dequeueSell(`${matched[4]}|${matched[1]}|${matched[6]}|${matched[7]}`);
           return {
-            name: `[V12] ${matched[2]}`,
-            code: matched[3],
+            name: `[${tag}] ${matched[3]}`,
+            code: matched[4],
             buyCondition: {
               label: "当日第一",
               reason: `收盘评分全池第一，次日开盘买入\n信号日: ${matched[1]}`
             },
             sellCondition: sellInfo ? sellInfo.sellCondition : null,
-            buyDate: matched[5],
-            buyPrice: matched[6],
+            buyDate: matched[6],
+            buyPrice: matched[7],
             sellDate: sellInfo ? sellInfo.sellDate : "-",
             sellPrice: sellInfo ? sellInfo.sellPrice : "-",
             profit: sellInfo ? sellInfo.profit : "-",
@@ -3203,7 +3236,7 @@
     }
 
     function currentDataTimestamp() {
-      for (const strategy of ["v10pro", "v10", "v8", "v4", "v12"]) {
+      for (const strategy of ["v10pro", "v10", "v8", "v4", "v12", "v14"]) {
         const value = String(strategyPayloadMap[strategy]?.cached_at || "").trim();
         if (value) {
           return value.replace("T", " ").slice(0, 19);
@@ -3217,7 +3250,7 @@
       let latestTrade = "-";
 
       // V10Pro 最后写入，因此同一 ETF 优先采用共享行情池中的 V10Pro 数据。
-      for (const strategy of ["v4", "v8", "v10", "v12", "v10pro"]) {
+      for (const strategy of ["v4", "v8", "v10", "v12", "v14", "v10pro"]) {
         const payload = strategyPayloadMap[strategy];
         if (!payload) continue;
         const parsed = buildParsedPayloadForStrategy(strategy, payload);
@@ -3514,7 +3547,9 @@
           ? "V4Pro 使用完整 ETF 池 chg20 算术平均值过滤市场，并结合 score 前4、K线形态、仓位与重复持仓限制。"
           : currentStrategy === "v12"
             ? "V12 每日收盘对全池评分排名，只持有第一名；绿色“当日第一”表示该 ETF 是下一交易日的持有目标。"
-            : "V8 的买入条件按 step2、step3、step4 显示；过滤条件按最新文本可还原的规则展示。";
+            : currentStrategy === "v14"
+              ? "V14 每日收盘按双范围布尔评分(满足条件数0~3)排名，只持有第一名；深跌日仅在深跌票内选第一。"
+              : "V8 的买入条件按 step2、step3、step4 显示；过滤条件按最新文本可还原的规则展示。";
       renderRecentReturnChart(parsed.recentTrades);
       renderRankingTable(parsed.rankRows);
 
@@ -3527,6 +3562,8 @@
           ? "V4 按命中、已卖出和待开盘卖出记录匹配交易明细。"
         : currentStrategy === "v12"
           ? "V12 独立1槽全仓，排名被取代时次日开盘换仓；账户收益按每笔原始收益单利累加。"
+        : currentStrategy === "v14"
+          ? "V14 独立1槽全仓，双范围布尔评分排名被取代时次日开盘换仓；账户收益按每笔原始收益单利累加。"
           : "鼠标停留或点击条件标签都可以看具体原因。";
       renderTradeTable(parsed.recentTrades);
 
@@ -3665,7 +3702,8 @@
         || text.includes("暂无 V10 缓存结果")
         || text.includes("暂无 V8 缓存结果")
         || text.includes("暂无 V4 缓存结果")
-        || text.includes("暂无 V12 缓存结果");
+        || text.includes("暂无 V12 缓存结果")
+        || text.includes("暂无 V14 缓存结果");
     }
 
     function handleStrategyError(error, statusPrefix = "请求失败", preserveCurrent = false) {
@@ -3759,7 +3797,8 @@
           v10: { ...normalized.v10, demo_sample: true, front_cached: false },
           v8: { ...normalized.v8, demo_sample: true, front_cached: false },
           v4: null,
-          v12: null
+          v12: null,
+          v14: null
         };
         currentPassword = "demo";
         applyStrategyScope(ALL_STRATEGIES);
@@ -3949,7 +3988,7 @@
       }
     });
     allOperationsConfirmBtn.addEventListener("click", renderAllOperations);
-    [allV4AmountInput, allV8AmountInput, allV10ProAmountInput, allV10AmountInput, allV12AmountInput].forEach(input => {
+    [allV4AmountInput, allV8AmountInput, allV10ProAmountInput, allV10AmountInput, allV12AmountInput, allV14AmountInput].forEach(input => {
       input.addEventListener("input", () => {
         saveAllOperationAmounts();
         updateAllOperationTotals();
@@ -3966,6 +4005,7 @@
     btnV8.addEventListener("click", () => { void switchStrategy("v8"); });
     btnV4.addEventListener("click", () => { void switchStrategy("v4"); });
     btnV12.addEventListener("click", () => { void switchStrategy("v12"); });
+    btnV14.addEventListener("click", () => { void switchStrategy("v14"); });
     btnTodayTrend.addEventListener("click", openTodayTrendDialog);
     openAllOperationsBtn.addEventListener("click", openAllOperations);
     btnRefresh.addEventListener("click", openRefreshConfirmDialog);
