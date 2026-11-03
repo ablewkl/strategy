@@ -1087,6 +1087,7 @@
          <button id="btnV8" type="button">V8</button>
          <button id="btnV10Pro" type="button">V10Pro</button>
          <button id="btnV10" type="button">V10</button>
+         <button id="btnV14" type="button" hidden>V14</button>
          <button id="btnTodayTrend" type="button">今日走势</button>
          <button id="openAllOperationsBtn" type="button">全部操作</button>
           <button id="btnRefresh" class="warn" type="button">获取最新数据</button>
@@ -1412,6 +1413,10 @@
           <p class="section-note" id="yearlyTitle">无</p>
           <div class="month-grid" id="yearlyGrid"></div>
         </section>
+        <section class="dialog-section wide" id="v14EquitySection" hidden>
+          <h4>累计收益曲线（单利）</h4>
+          <div id="v14EquityChart" class="return-chart"></div>
+        </section>
       </div>
       <div id="profitTooltip" class="floating-tooltip" role="tooltip" hidden></div>
     </div>
@@ -1462,15 +1467,16 @@
 
   <script src="./echarts.min.js"></script>
   <script>
-    const DEFAULT_BASE_URL = "https://1258557411-28azoctxlh.ap-guangzhou.tencentscf.com";
-    const baseUrl = DEFAULT_BASE_URL.replace(/\/+$/, "");
     const pageParams = new URLSearchParams(window.location.search);
+    const DEFAULT_BASE_URL = pageParams.get("base") || "https://1258557411-28azoctxlh.ap-guangzhou.tencentscf.com";
+    const baseUrl = DEFAULT_BASE_URL.replace(/\/+$/, "");
 
     const statusEl = document.getElementById("status");
     const btnV10Pro = document.getElementById("btnV10Pro");
     const btnV10 = document.getElementById("btnV10");
     const btnV8 = document.getElementById("btnV8");
     const btnV4 = document.getElementById("btnV4");
+    const btnV14 = document.getElementById("btnV14");
     const btnTodayTrend = document.getElementById("btnTodayTrend");
     const openAllOperationsBtn = document.getElementById("openAllOperationsBtn");
     const btnRefresh = document.getElementById("btnRefresh");
@@ -1545,6 +1551,8 @@
     const profitCardsEl = document.getElementById("profitCards");
     const yearlyTitleEl = document.getElementById("yearlyTitle");
     const yearlyGridEl = document.getElementById("yearlyGrid");
+    const v14EquitySectionEl = document.getElementById("v14EquitySection");
+    const v14EquityChartEl = document.getElementById("v14EquityChart");
 
     const loadingOverlay = document.getElementById("loadingOverlay");
     const loadingTitle = document.getElementById("loadingTitle");
@@ -1564,7 +1572,7 @@
       v10: "20000",
     };
     const STRATEGY_BUNDLE_STORAGE_KEY = "etf_strategy_bundle_v10_v8_v4pro_20260816";
-    const ALL_STRATEGIES = ["v4", "v8", "v10pro", "v10"];
+    const ALL_STRATEGIES = ["v4", "v8", "v10pro", "v10", "v14"];
     const DEFAULT_STRATEGIES = ["v4", "v10"];
     const ORDER_PRICE_MULTIPLIER = 1.04;
     const DEMO_BUNDLE_URL = pageParams.get("demoBundle") || (pageParams.get("demo") === "1" ? "./demo/etf_strategy_bundle_latest.json" : "");
@@ -1612,7 +1620,7 @@
     let currentPassword = "";
     let currentPayload = null;
     let currentParsed = null;
-    let strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null };
+    let strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null, v14: null };
     let currentSplitMap = {};
     let currentSplitRequestId = 0;
     let allOperationSplitRequestId = 0;
@@ -1663,10 +1671,16 @@
       btnV10.classList.toggle("active", currentStrategy === "v10");
       btnV8.classList.toggle("active", currentStrategy === "v8");
       btnV4.classList.toggle("active", currentStrategy === "v4");
+      btnV14.classList.toggle("active", currentStrategy === "v14");
     }
 
     function strategyLabel(strategy) {
       return strategy === "v10pro" ? "V10Pro" : String(strategy || "").toUpperCase();
+    }
+
+    // 参与金额试算/全部操作/今日走势等聚合功能的策略(v14 是信号型回测策略, 不参与)
+    function planStrategies() {
+      return currentStrategies.filter(strategy => strategy !== "v14");
     }
 
     function scopedStrategyLabels(separator = "、") {
@@ -1699,6 +1713,7 @@
       btnV10.hidden = !scopeHas("v10");
       btnV8.hidden = !scopeHas("v8");
       btnV4.hidden = !scopeHas("v4");
+      btnV14.hidden = !scopeHas("v14");
       const fieldByStrategy = { v4: allV4Field, v8: allV8Field, v10pro: allV10ProField, v10: allV10Field };
       Object.entries(fieldByStrategy).forEach(([strategy, field]) => {
         field.hidden = !scopeHas(strategy);
@@ -1817,6 +1832,10 @@
     function isPayloadStructurallyValid(strategy, payload) {
       if (!payload || typeof payload.text !== "string") return false;
       const text = payload.text;
+      if (strategy === "v14") {
+        return Boolean(payload.data && payload.data.summary && payload.data.top !== undefined
+          && text.includes("V14:"));
+      }
       if (strategy === "v4") {
         return text.includes("最新交易日score排行:")
           && text.includes("最新V4买入计划:")
@@ -1839,7 +1858,7 @@
       const required = Array.isArray(requiredStrategies) && requiredStrategies.length
         ? requiredStrategies
         : DEFAULT_STRATEGIES;
-      const nextMap = { v10pro: null, v10: null, v8: null, v4: null };
+      const nextMap = { v10pro: null, v10: null, v8: null, v4: null, v14: null };
       for (const strategy of required) {
         const result = results[strategy];
         if (!isPayloadStructurallyValid(strategy, result)) {
@@ -1864,6 +1883,7 @@
         v10: normalized.v10 ? { ...normalized.v10, front_cached: false } : null,
         v8: normalized.v8 ? { ...normalized.v8, front_cached: false } : null,
         v4: normalized.v4 ? { ...normalized.v4, front_cached: false } : null,
+        v14: normalized.v14 ? { ...normalized.v14, front_cached: false } : null,
       };
       return strategyPayloadMap;
     }
@@ -1879,11 +1899,12 @@
         v10: normalized.v10 ? { ...normalized.v10, front_cached: true } : null,
         v8: normalized.v8 ? { ...normalized.v8, front_cached: true } : null,
         v4: normalized.v4 ? { ...normalized.v4, front_cached: true } : null,
-        };
-        return strategyPayloadMap;
+        v14: normalized.v14 ? { ...normalized.v14, front_cached: true } : null,
+      };
+      return strategyPayloadMap;
       } catch {
         safeStorageRemove(STRATEGY_BUNDLE_STORAGE_KEY);
-        strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null };
+        strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null, v14: null };
         return null;
       }
     }
@@ -1893,7 +1914,7 @@
     }
 
     function clearStrategyPayloads() {
-      strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null };
+      strategyPayloadMap = { v10pro: null, v10: null, v8: null, v4: null, v14: null };
       currentSplitMap = {};
       allOperationSignalCloseMap = {};
       currentSplitRequestId += 1;
@@ -2016,7 +2037,7 @@
 
     function allOperationSignalCloseRequests() {
       const requests = [];
-      for (const strategy of currentStrategies) {
+      for (const strategy of planStrategies()) {
         const payload = strategyPayloadMap[strategy];
         if (!payload) continue;
         const parsed = buildParsedPayloadForStrategy(strategy, payload);
@@ -2046,7 +2067,7 @@
 
     function allOperationSplitCodes() {
       const codes = [];
-      for (const strategy of currentStrategies) {
+      for (const strategy of planStrategies()) {
         const payload = strategyPayloadMap[strategy];
         if (!payload) continue;
         const parsed = buildParsedPayloadForStrategy(strategy, payload);
@@ -2118,7 +2139,7 @@
     }
 
     function renderAllStrategyCompoundMultipliers() {
-      const strategies = currentStrategies;
+      const strategies = planStrategies();
       allStrategyCompoundMultipliersEl.innerHTML = strategies.map(strategy => {
         const payload = strategyPayloadMap[strategy];
         const parsed = payload ? buildParsedPayloadForStrategy(strategy, payload) : null;
@@ -2129,7 +2150,7 @@
 
     function renderAllOperations() {
       const amounts = allOperationAmounts();
-      const strategies = currentStrategies;
+      const strategies = planStrategies();
       renderAllStrategyCompoundMultipliers();
       if (strategies.some(strategy => !strategyPayloadMap[strategy])) {
         allOperationsSummaryEl.innerHTML = `<span class="result-chip bad">请先获取 ${strategies.map(strategyLabel).join(" / ")} 最新数据</span>`;
@@ -2193,7 +2214,7 @@
     }
 
     function openAllOperations() {
-      if (currentStrategies.some(strategy => !strategyPayloadMap[strategy])) {
+      if (planStrategies().some(strategy => !strategyPayloadMap[strategy])) {
         setStatus(`请先获取 ${scopedStrategyLabels(" / ")} 最新数据`, true);
         return;
       }
@@ -2213,6 +2234,9 @@
       }
       if (strategy === "v10pro") {
         return "0.75*chg50+0.1*chg30-percent_decimal*(-1.75)";
+      }
+      if (strategy === "v14") {
+        return "chg10 + 1.0*chg50 - 1.0*chg1（剔过热: chg10≥15%；市场门: 池均chg20<-2%不买入）";
       }
       return "0.5*chg50+0.1*chg30-percent_decimal*(-0.5)";
     }
@@ -3041,7 +3065,44 @@
       }).filter(Boolean);
     }
 
+    function buildV14ParsedPayload(payload) {
+      const data = payload && typeof payload.data === "object" && payload.data ? payload.data : null;
+      const s = data?.summary || {};
+      const gate = data?.market_gate || {};
+      const summary = {
+        title: "V14: 动量轮动·剔过热·市场门",
+        latestTrade: `最新交易日: ${data?.end_date || "-"}`,
+        scoreFormulaLines: [],
+        stats: Object.keys(s).length
+          ? `总收益 ${formatSignedPercent(s.total_return)} | 回撤 ${formatSignedPercent(s.max_drawdown)} | 交易 ${s.trades} 笔 | 胜率 ${s.win_rate}%`
+          : "",
+        latestAccount: data?.is_oos
+          ? `IS ${formatSignedPercent(data.is_oos.is?.total_return)} / OOS ${formatSignedPercent(data.is_oos.oos?.total_return)}`
+          : "",
+        yearlyTitle: "分年收益",
+        yearlyLines: [],
+      };
+      return {
+        isV14: true,
+        v14Data: data,
+        summaryInfo: { summary },
+        sections: {},
+        lines: splitLines(payload.text),
+        buyPlans: [],
+        holds: [],
+        sellPlans: [],
+        rankRows: [],
+        recentTrades: [],
+        sizingEntries: [],
+        yearlyMonths: Object.entries(data?.yearly || {}).map(([year, value]) => ({ month: year, value: Number(value) })),
+        latestAccountInfo: null
+      };
+    }
+
     function buildParsedPayload(payload) {
+      if (currentStrategy === "v14") {
+        return buildV14ParsedPayload(payload);
+      }
       const lines = splitLines(payload.text);
       const summaryInfo = extractSummary(lines, payload);
       const sections = parseSections(lines, summaryInfo);
@@ -3258,6 +3319,226 @@
       `).join("");
     }
 
+    // ==================== V14 专属视图(动量轮动·剔过热·市场门) ====================
+    function formatSignedPercent(value, digits = 2) {
+      const num = Number(value);
+      if (!Number.isFinite(num)) return "-";
+      return `${num > 0 ? "+" : ""}${formatNumber(num, digits)}%`;
+    }
+
+    function renderV14SignalCards(data) {
+      const gate = data.market_gate || {};
+      const top = data.top;
+      if (!top) {
+        return renderEmptyState("暂无合格候选");
+      }
+      const stateChip = gate.open
+        ? (top.skip
+          ? renderTooltipChip("追高限制", top.state, "flag-chip bad")
+          : '<span class="flag-chip ok">次日开盘买入第1名</span>')
+        : renderTooltipChip("市场门关", top.state || "不买入(已持仓则按排名管理)", "flag-chip bad");
+      const metrics = [
+        `<span class="sizing-metric"><span>score</span><strong>${escapeHtml(formatNumber(top.score, 4))}</strong></span>`,
+        `<span class="sizing-metric"><span>chg10</span><strong>${escapeHtml(formatSignedPercent(top.chg10, 1))}</strong></span>`,
+        `<span class="sizing-metric"><span>chg50</span><strong>${escapeHtml(formatSignedPercent(top.chg50, 1))}</strong></span>`,
+        `<span class="sizing-metric"><span>当日</span><strong>${escapeHtml(formatSignedPercent(top.chg1, 1))}</strong></span>`
+      ];
+      return `
+        <article class="record-card sizing-card">
+          <div class="record-head">
+            <div class="record-title">${escapeHtml(top.name)} (${escapeHtml(top.code)}) · 第1名</div>
+            <div class="sizing-metrics">${metrics.join("")}</div>
+          </div>
+          <div class="chip-row">${stateChip}</div>
+        </article>
+      `;
+    }
+
+    function renderV14GateCard(data) {
+      const gate = data.market_gate || {};
+      const avg = Number(gate.chg20_avg);
+      return `
+        <article class="record-card">
+          <div class="record-head">
+            <div class="record-title">市场门(池均chg${escapeHtml(String(gate.window ?? 20))})</div>
+            ${gate.open
+              ? '<span class="result-chip ok">开</span>'
+              : '<span class="result-chip bad">关</span>'}
+          </div>
+          <div class="chip-row">
+            <span class="chip">池均 ${escapeHtml(formatSignedPercent(avg, 3))}</span>
+            <span class="chip">阈值 ${escapeHtml(formatSignedPercent(gate.threshold, 1))}</span>
+            <span class="chip">门关只挡新买入, 已持仓按排名管理</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderV14RankingTable(rows) {
+      if (!rows.length) {
+        rankingTableBodyEl.innerHTML = `<tr><td colspan="8">${renderEmptyState("暂无排行数据")}</td></tr>`;
+        return;
+      }
+      rankingTableBodyEl.innerHTML = rows.map(row => `
+        <tr>
+          <td class="mono">${escapeHtml(String(row.rank))}</td>
+          <td class="name-cell">
+            <div class="name-main">${escapeHtml(row.name)}</div>
+            <div class="name-sub mono">${escapeHtml(row.code)}</div>
+          </td>
+          <td class="mono">${escapeHtml(formatNumber(row.score, 4))}</td>
+          <td class="mono">${escapeHtml(formatSignedPercent(row.chg10, 1))}</td>
+          <td class="mono">${escapeHtml(formatSignedPercent(row.chg50, 1))}</td>
+          <td>${renderTooltipChip(`当日 ${formatSignedPercent(row.chg1, 1)}`, "信号日当日涨幅, 作为反转项计入 score", "flag-chip")}</td>
+          <td>${row.skip
+            ? renderTooltipChip("追高", "第1名信号日当日涨幅>1%, 次日不买", "flag-chip bad")
+            : '<span class="flag-chip ok">未过热</span>'}</td>
+          <td>${row.buyable
+            ? '<span class="result-chip ok">√</span>'
+            : renderTooltipChip("×", row.note || "非第1名或市场门关闭", "result-chip bad")}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderV14EquityCurve(targetEl, equity, title) {
+      const points = (equity || [])
+        .filter(point => Array.isArray(point) && /^\d{4}-\d{2}-\d{2}$/.test(String(point[0])))
+        .map(point => ({ date: String(point[0]), value: Number(point[1]) }))
+        .filter(point => Number.isFinite(point.value));
+      if (!targetEl) return;
+      if (!points.length) {
+        targetEl.innerHTML = renderEmptyState("暂无净值数据");
+        return;
+      }
+      if (!window.echarts) {
+        targetEl.innerHTML = renderEmptyState("正在加载图表组件...");
+        void ensureEchartsLoaded().then(() => renderV14EquityCurve(targetEl, equity, title)).catch(() => {
+          targetEl.innerHTML = renderEmptyState("图表组件加载失败，请检查网络后刷新重试。");
+        });
+        return;
+      }
+      const chart = window.echarts.getInstanceByDom(targetEl) || window.echarts.init(targetEl, null, { renderer: "canvas" });
+      chart.setOption({
+        animationDuration: 500,
+        color: ["#b65e38"],
+        title: { text: title || "V14 累计收益（单利）", subtext: `${points[0].date} 至 ${points[points.length - 1].date}`, textStyle: { color: "#2d231d", fontSize: 15 }, subtextStyle: { color: "#7b6c62", fontSize: 12 } },
+        tooltip: { trigger: "axis", valueFormatter: value => `${formatNumber(Number(value), 2)}%` },
+        grid: { left: 64, right: 28, top: 62, bottom: 48 },
+        xAxis: { type: "category", boundaryGap: false, data: points.map(point => point.date), axisLabel: { color: "#7b6c62", hideOverlap: true }, axisLine: { lineStyle: { color: "#e4d9cf" } } },
+        yAxis: { type: "value", min: value => Math.min(value.min, 0), max: value => Math.max(value.max, 0), axisLabel: { color: "#7b6c62", formatter: value => `${formatNumber(Number(value), 2)}%` }, splitLine: { lineStyle: { color: "#eee5dc" } } },
+        series: [{ type: "line", smooth: true, showSymbol: false, lineStyle: { width: 2.5 }, areaStyle: { color: "rgba(182, 94, 56, 0.1)" }, markLine: { silent: true, symbol: "none", lineStyle: { color: "#d19a82", type: "dashed" }, data: [{ yAxis: 0 }] }, data: points.map(point => point.value) }]
+      }, true);
+      chart.resize();
+    }
+
+    function renderV14Profit(data) {
+      const s = data?.summary || {};
+      const gate = data?.market_gate || {};
+      const isOos = data?.is_oos || {};
+      const cards = [
+        {
+          label: "总收益（2020起·单利）",
+          value: formatSignedPercent(s.total_return),
+          copy: `回撤 ${formatSignedPercent(s.max_drawdown)} | 收回撤比 ${s.ratio ?? "-"}`
+        },
+        {
+          label: "IS / OOS",
+          value: `${formatSignedPercent(isOos.is?.total_return)} / ${formatSignedPercent(isOos.oos?.total_return)}`,
+          copy: `IS回撤 ${formatSignedPercent(isOos.is?.max_drawdown)} | OOS回撤 ${formatSignedPercent(isOos.oos?.max_drawdown)}`
+        },
+        {
+          label: "交易 / 胜率",
+          value: `${s.trades ?? "-"} 笔 / ${s.win_rate ?? "-"}%`,
+          copy: `空仓 ${s.cash_days ?? "-"} 日 | 截止 ${data?.end_date || "-"}`
+        },
+        {
+          label: "市场门",
+          value: gate.open ? "开" : "关",
+          copy: `池均chg${gate.window ?? 20} ${formatSignedPercent(gate.chg20_avg, 3)} | 阈值 ${formatSignedPercent(gate.threshold, 1)}`
+        }
+      ];
+      profitDialogNoteEl.textContent = `V14 动量轮动 | ${data?.backtest_start || "2020-01-01"} 起·单利 | 截止 ${data?.end_date || "-"}`;
+      profitCardsEl.innerHTML = cards.map(item => `
+        <article class="profit-card">
+          <div class="summary-label">${escapeHtml(item.label)}</div>
+          <strong>${escapeHtml(item.value)}</strong>
+          <div class="summary-copy">${escapeHtml(item.copy)}</div>
+        </article>
+      `).join("");
+
+      const yearly = data?.yearly || {};
+      const years = Object.keys(yearly).sort();
+      yearlyTitleEl.textContent = "分年收益（单利）";
+      yearlyGridEl.innerHTML = years.length
+        ? years.map(year => `
+          <div class="month-card">
+            <span>${escapeHtml(year)}</span>
+            <strong class="mono">${escapeHtml(formatSignedPercent(yearly[year], 1))}</strong>
+          </div>
+        `).join("")
+        : renderEmptyState("暂无分年收益数据");
+
+      v14EquitySectionEl.hidden = false;
+      renderV14EquityCurve(v14EquityChartEl, data?.equity, "V14 累计收益（单利）");
+    }
+
+    function renderV14Dialogs(parsed) {
+      const data = parsed.v14Data;
+      v14EquitySectionEl.hidden = true;
+      if (!data) {
+        operationDialogNoteEl.textContent = "V14 数据缺失";
+        buyPlanListEl.innerHTML = renderEmptyState("暂无 V14 结构化数据");
+        holdListEl.innerHTML = renderEmptyState("暂无当前持仓");
+        sellPlanListEl.innerHTML = renderEmptyState("暂无卖出计划");
+        return;
+      }
+      const gate = data.market_gate || {};
+      const trailPct = data.params?.trail_pct ?? 9;
+
+      // 最新操作: 信号 / 门 / 退出规则
+      operationDialogNoteEl.textContent = `V14 动量轮动 | 市场门${gate.open ? "开" : "关"} | 信号日 ${data.signal_date || "-"}`;
+      buyPlanListEl.innerHTML = renderV14SignalCards(data);
+      holdListEl.innerHTML = renderV14GateCard(data);
+      sellPlanListEl.innerHTML = `
+        <article class="record-card">
+          <div class="record-title">退出规则</div>
+          <div class="record-copy">第1名易主/被剔除 或 峰值回撤&gt;${escapeHtml(String(trailPct))}% -&gt; 次日开盘全卖(T+1, 挂单可执行); 门关不触发卖出。</div>
+        </article>
+      `;
+      renderSizingFromParsed(parsed);
+
+      // 最新排名
+      rankingDialogNoteEl.textContent = `${data.signal_date || "-"} | V14 动量轮动 score 排行(剔过热+市场门)。`;
+      rankingFormulaEl.innerHTML = [
+        "score: chg10 + 1.0×chg50 - 1.0×chg1",
+        "剔除: chg10 ≥ 15% | 市场门: 池均chg20 ≥ -2.0% 只挡新买入",
+        `追高限制: 第1名当日涨幅 > 1% 次日不买 | 移动止损: 峰值回撤 > ${escapeHtml(String(trailPct))}%`
+      ].map(escapeHtml).join("<br>");
+      rankingHintEl.textContent = gate.open
+        ? "市场门开启; 排名第1且未触发追高限制时, 次日开盘买入。"
+        : "市场门关闭, 不买入; 已持仓按纯排名管理。";
+      renderV14RankingTable(data.ranking || []);
+
+      // 最近交易
+      tradeDialogNoteEl.textContent = `V14 最近平仓明细(返回最近 ${(data.recent_trades || []).length} 笔)。`;
+      tradeHintEl.textContent = "V14 为开盘价执行: 买入价=次日开盘, 卖出价=次日开盘; 价格列不适用, 显示 -。";
+      renderTradeTable((data.recent_trades || []).map(trade => ({
+        name: trade.name,
+        code: trade.code,
+        buyCondition: null,
+        sellCondition: null,
+        buyDate: trade.entry_date || "-",
+        buyPrice: "-",
+        sellDate: trade.exit_date || "-",
+        sellPrice: "-",
+        profit: formatSignedPercent(trade.ret),
+        accountReturn: "-"
+      })));
+
+      // 最近收益
+      renderV14Profit(data);
+    }
+
     function buildSimpleInterestCurvePoints(trades) {
       const settled = (trades || [])
         .map(trade => ({
@@ -3391,6 +3672,11 @@
     }
 
     function renderDialogs(parsed) {
+      if (parsed.isV14) {
+        renderV14Dialogs(parsed);
+        return;
+      }
+      v14EquitySectionEl.hidden = true;
       const summary = parsed.summaryInfo.summary;
       const statsDisplay = resolveStatsDisplay(summary.stats);
       const buyCount = filterBuyPlanLines(parsed.buyPlans, { skipPrefix: "卖出前持仓数:" }).length;
@@ -3442,6 +3728,28 @@
         tileRankingMetaEl.innerHTML = '<span class="meta-pill">暂无数据</span>';
         tileTradeMetaEl.innerHTML = '<span class="meta-pill">暂无数据</span>';
         tileProfitMetaEl.innerHTML = '<span class="meta-pill">暂无数据</span>';
+        return;
+      }
+
+      if (parsed.isV14) {
+        const data = parsed.v14Data || {};
+        const gate = data.market_gate || {};
+        tileOperationMetaEl.innerHTML = `
+          <span class="meta-pill">市场门${gate.open ? "开" : "关"}</span>
+          <span class="meta-pill">第1名 ${data.top ? escapeHtml(`${data.top.name}(${data.top.code})`) : "-"}</span>
+        `;
+        tileRankingMetaEl.innerHTML = `
+          <span class="meta-pill">合格候选 ${(data.ranking || []).length} 条</span>
+          <span class="meta-pill">V14</span>
+        `;
+        tileTradeMetaEl.innerHTML = `
+          <span class="meta-pill">最近平仓 ${(data.recent_trades || []).length} 笔</span>
+          <span class="meta-pill">交易 ${data.summary?.trades ?? "-"} 笔</span>
+        `;
+        tileProfitMetaEl.innerHTML = `
+          <span class="meta-pill">总收益 ${escapeHtml(formatSignedPercent(data.summary?.total_return))}</span>
+          <span class="meta-pill">回撤 ${escapeHtml(formatSignedPercent(data.summary?.max_drawdown))}</span>
+        `;
         return;
       }
 
@@ -3501,6 +3809,7 @@
       profitCardsEl.innerHTML = renderEmptyState("暂无收益数据");
       yearlyTitleEl.textContent = "暂无年度收益";
       yearlyGridEl.innerHTML = renderEmptyState("暂无月度收益数据");
+      v14EquitySectionEl.hidden = true;
       setActionButtonsDisabled(true);
     }
 
@@ -3565,6 +3874,7 @@
         || text.includes("暂无 V10 缓存结果")
         || text.includes("暂无 V8 缓存结果")
         || text.includes("暂无 V4 缓存结果")
+        || text.includes("暂无 V14 缓存结果")
         ;
     }
 
@@ -3659,6 +3969,7 @@
           v10: { ...normalized.v10, demo_sample: true, front_cached: false },
           v8: { ...normalized.v8, demo_sample: true, front_cached: false },
           v4: null,
+          v14: null,
         };
         currentPassword = "demo";
         applyStrategyScope(ALL_STRATEGIES);
@@ -3864,6 +4175,7 @@
     btnV10.addEventListener("click", () => { void switchStrategy("v10"); });
     btnV8.addEventListener("click", () => { void switchStrategy("v8"); });
     btnV4.addEventListener("click", () => { void switchStrategy("v4"); });
+    btnV14.addEventListener("click", () => { void switchStrategy("v14"); });
     btnTodayTrend.addEventListener("click", openTodayTrendDialog);
     openAllOperationsBtn.addEventListener("click", openAllOperations);
     btnRefresh.addEventListener("click", openRefreshConfirmDialog);
@@ -3877,9 +4189,20 @@
     openRankingBtn.addEventListener("click", () => { openDialog(rankingDialog); });
     openTradeBtn.addEventListener("click", () => {
       openDialog(tradeDialog);
-      requestAnimationFrame(() => renderRecentReturnChart(currentParsed?.recentTrades));
+      requestAnimationFrame(() => {
+        if (currentParsed?.isV14) {
+          renderV14EquityCurve(tradeReturnChartEl, currentParsed.v14Data?.equity, "V14 累计收益（单利）");
+        } else {
+          renderRecentReturnChart(currentParsed?.recentTrades);
+        }
+      });
     });
-    openProfitBtn.addEventListener("click", () => { openDialog(profitDialog); });
+    openProfitBtn.addEventListener("click", () => {
+      openDialog(profitDialog);
+      if (currentParsed?.isV14) {
+        requestAnimationFrame(() => renderV14EquityCurve(v14EquityChartEl, currentParsed.v14Data?.equity, "V14 累计收益（单利）"));
+      }
+    });
 
     applyStrategyScope(DEFAULT_STRATEGIES);
     if (DEMO_MODE) {
