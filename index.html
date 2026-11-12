@@ -1571,7 +1571,7 @@
       v10pro: "30000",
       v10: "20000",
     };
-    const STRATEGY_BUNDLE_STORAGE_KEY = "etf_strategy_bundle_v10_v8_v4pro_20260816";
+    const STRATEGY_BUNDLE_STORAGE_KEY = "etf_strategy_bundle_v10_v8_v4pro_20261112";
     const ALL_STRATEGIES = ["v4", "v8", "v10pro", "v10", "v14"];
     const DEFAULT_STRATEGIES = ["v4", "v10"];
     const ORDER_PRICE_MULTIPLIER = 1.04;
@@ -2230,7 +2230,7 @@
         return "8 * chg10 + 4 * chg50 - 8 * last1chg (last1chg=(n-1收盘价-n-1开盘价)/n-2收盘价)";
       }
       if (strategy === "v4") {
-        return "26 * shorttimechg + 12 * longtimechg";
+        return "24 * shorttimechg + 12 * longtimechg";
       }
       if (strategy === "v10pro") {
         return "0.75*chg50+0.1*chg30-percent_decimal*(-1.75)";
@@ -2747,7 +2747,7 @@
         }
 
         if (strategy === "v4") {
-          const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+score:([-\d.]+)\s+short:([-\d.]+)\s+long:([-\d.]+)\s+last1:([-\d.]+|-)\s+time60:([-\d.]+|-)\s+open:([-\d.]+)\s+close:([-\d.]+)\s+percent:([-\d.]+)\s+poolChg20Ave:([-\d.]+|-)\s+candle:([YN])$/);
+          const matched = line.match(/^(\d+)\.(.+?)\((S[HZ]\d+)\)\s+score:([-\d.]+)\s+short:([-\d.]+)\s+long:([-\d.]+)\s+last1:([-\d.]+|-)\s+time60:([-\d.]+|-)\s+open:([-\d.]+)\s+close:([-\d.]+)\s+percent:([-\d.]+)\s+candle:([YN])$/);
           if (!matched) continue;
 
           const rank = Number(matched[1]);
@@ -2756,20 +2756,14 @@
           const open = Number(matched[9]);
           const close = Number(matched[10]);
           const percent = Number(matched[11]);
-          const poolChg20Ave = matched[12] === "-" ? NaN : Number(matched[12]);
-          const candleOk = matched[13] === "Y";
+          const candleOk = matched[12] === "Y";
           const conditions = [];
           const filters = [];
           const selected = v4BuyCodes.has(code);
 
-          const marketOk = Number.isFinite(poolChg20Ave) && poolChg20Ave > -0.06;
-          conditions.push({ label: "市场", reason: "当日完整 ETF 池 chg20 算术平均值 > -0.06。", passed: marketOk });
           conditions.push({ label: "前4", reason: "V4 从最新 score 排名前 4 的 ETF 中选择候选。", passed: rank <= 4 });
           conditions.push({ label: "K线", reason: "round(open-close, 3) > 0.001，或上影线减下影线 > 100。", passed: candleOk });
           conditions.push({ label: "计划", reason: "满足条件、仓位和重复持仓限制后进入最新买入计划。", passed: selected });
-          if (!marketOk) {
-            filters.push({ label: "市场过滤", reason: `pool chg20 平均值 ${Number.isFinite(poolChg20Ave) ? poolChg20Ave : "-"} 未高于 -0.06。` });
-          }
 
           rows.push({
             rank,
@@ -2782,7 +2776,7 @@
             conditions,
             filters,
             pass: selected,
-            note: selected ? "已进入 V4Pro 最新买入计划。" : "未进入 V4Pro 最新买入计划。",
+            note: selected ? "已进入 V4 最新买入计划。" : "未进入 V4 最新买入计划。",
             open,
             close,
             percent
@@ -2886,7 +2880,7 @@
         }
 
         for (const line of sections["卖出计划"] || []) {
-          const matched = line.match(/^触发卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+实际卖出日:(\d{4}-\d{2}-\d{2})\s+开盘待卖/);
+          const matched = line.match(/^触发卖出日:(\d{4}-\d{2}-\d{2})\s+\|\s+(.+?)\((S[HZ]\d+)\)\s+\|\s+买入:(\d{4}-\d{2}-\d{2})\s+([0-9.]+)\s+\|\s+实际卖出日:(\d{4}-\d{2}-\d{2})\s+(?:开盘待卖|开盘待定)/);
           if (!matched) continue;
           enqueuePending(`${matched[3]}|${matched[4]}|${matched[5]}`, {
             triggerDate: matched[1],
@@ -3263,7 +3257,7 @@
         <tr>
           <td class="name-cell">
             <div class="name-main">${escapeHtml(row.name)}</div>
-            <div class="name-sub mono">${escapeHtml(row.code)}</div>
+            ${row.code ? `<div class="name-sub mono">${escapeHtml(row.code)}</div>` : ""}
           </td>
           <td>${row.buyCondition && row.buyCondition.label !== "-" ? renderTooltipChip(row.buyCondition.label, row.buyCondition.reason) : '<span class="flag-chip empty">-</span>'}</td>
           <td>${row.sellCondition ? renderTooltipChip(row.sellCondition.label, row.sellCondition.reason) : '<span class="flag-chip empty">-</span>'}</td>
@@ -3346,7 +3340,7 @@
       return `
         <article class="record-card sizing-card">
           <div class="record-head">
-            <div class="record-title">${escapeHtml(top.name)} (${escapeHtml(top.code)}) · 第1名</div>
+            <div class="record-title">${escapeHtml(top.name)} · 第1名</div>
             <div class="sizing-metrics">${metrics.join("")}</div>
           </div>
           <div class="chip-row">${stateChip}</div>
@@ -3384,7 +3378,6 @@
           <td class="mono">${escapeHtml(String(row.rank))}</td>
           <td class="name-cell">
             <div class="name-main">${escapeHtml(row.name)}</div>
-            <div class="name-sub mono">${escapeHtml(row.code)}</div>
           </td>
           <td class="mono">${escapeHtml(formatNumber(row.score, 4))}</td>
           <td class="mono">${escapeHtml(formatSignedPercent(row.chg10, 1))}</td>
@@ -3524,7 +3517,7 @@
       tradeHintEl.textContent = "V14 为开盘价执行: 买入价=次日开盘, 卖出价=次日开盘; 价格列不适用, 显示 -。";
       renderTradeTable((data.recent_trades || []).map(trade => ({
         name: trade.name,
-        code: trade.code,
+        code: "", // V14 不展示股票代码
         buyCondition: null,
         sellCondition: null,
         buyDate: trade.entry_date || "-",
@@ -3701,7 +3694,7 @@
       rankingHintEl.textContent = currentStrategy === "v10pro" || currentStrategy === "v10"
         ? `${strategyLabel(currentStrategy)} 独立显示长期涨幅、percent、chg20、相对强度${currentStrategy === "v10" ? "、量比" : "、短期强度"}和空槽入选状态；绿色表示通过，红色表示不通过。`
         : currentStrategy === "v4"
-          ? "V4Pro 使用完整 ETF 池 chg20 算术平均值过滤市场，并结合 score 前4、K线形态、仓位与重复持仓限制。"
+          ? "V4 已移除池均市场门，按 score(24×chg10+12×chg50) 前4、K线形态、仓位与重复持仓限制买入；卖出含 L1 弱者红K规则。"
           : "V8 的买入条件按 step2、step3、step4 显示；过滤条件按最新文本可还原的规则展示。";
       renderRecentReturnChart(parsed.recentTrades);
       renderRankingTable(parsed.rankRows);
